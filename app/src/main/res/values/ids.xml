@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <item name="mglview" type="id"/>
+    <item name="controllerview" type="id"/>
+    <item name="consoleview" type="id"/>
+
+</resources>
