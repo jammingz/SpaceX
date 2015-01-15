@@ -4,5 +4,6 @@
     <item name="mglview" type="id"/>
     <item name="controllerview" type="id"/>
     <item name="consoleview" type="id"/>
+    <item name="debugWindow" type="id"/>
 
 </resources>

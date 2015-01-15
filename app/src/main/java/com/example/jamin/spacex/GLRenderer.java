@@ -21,9 +21,17 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     private final float[] mViewMatrix = new float[16];
     private final float[] mRotationMatrix = new float[16];
 
+    private int mCounter;
     private float mAngle;
     private float mTranslationX;
     private float mTranslationY;
+    private boolean mFirstDraw;
+
+    public GLRenderer() {
+        mFirstDraw = true;
+    }
+
+
 
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
@@ -31,13 +39,22 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         // Set the background frame color
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-        mPacman = new Pacman(150,0.2f,1.0f,1.0f,0.2f,1.0f);
+        mPacman = new Pacman(150,0.15f,1.0f,1.0f,0.2f,1.0f);
+        mAngle = 0; // Initialize angle to 0 degrees.
+        mCounter = 0;
     }
 
     @Override
     public void onDrawFrame(GL10 unused) {
         float[] scratch = new float[16];
         float[] results = new float[16];
+        mCounter++;
+
+        if (mCounter >= 60) {
+            mCounter = 0;
+            rotateCW();
+        }
+
 
         // Draw background color
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
@@ -64,6 +81,14 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         Matrix.translateM(results, 0, scratch, 0, mTranslationX, mTranslationY, 0);
 
         // Draw Pacman
+
+        // iterate mouth shape if this is not the first drawing of pacman
+
+        if (mFirstDraw) {
+            mFirstDraw = false;
+        } else {
+            mPacman.nextFrame();
+        }
         mPacman.draw(results);
     }
 
@@ -140,11 +165,24 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         mAngle = angle;
     }
 
+    public void rotateCW() {
+        mAngle = PacMath.modulus((int) mAngle + 90,360); // Add 90 mod(360) to current angle
+    }
+
+    public void rotateCCW() {
+        mAngle = PacMath.modulus((int) mAngle - 90,360); // Add 90 mod(360) to current angle
+    }
+
     public void setTranslation(float dx, float dy) {
         mTranslationX = dx;
         mTranslationY = dy;
     }
 
+    public void startAnimation() {
+        mPacman.startAnimation();
+    }
+
+    public void stopAnimation() { mPacman.stopAnimation();}
     /*
     public float[] boardRotation(float alpha, float beta) {
         float timeDiff = 0.04f; // dt = 0.2s

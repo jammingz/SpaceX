@@ -3,6 +3,7 @@ package com.example.jamin.spacex;
 import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,10 +14,15 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import static java.lang.Math.round;
+
 
 public class MainActivity extends Activity {
 
     private SurfaceView mGLView;
+    private boolean isPacmanAnimating;
+    private long mStartTime;
+    private long mLastTime;
 
 
     @Override
@@ -24,7 +30,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mGLView = new SurfaceView(this);
+        mGLView = new SurfaceView(getApplicationContext());
         // Getting width and height of the device screen
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
@@ -75,7 +81,26 @@ public class MainActivity extends Activity {
         mLayout.addView(controllerLayout);
         mLayout.addView(consoleLayout);
 
+
+        TextView debugWindow = new TextView(this);
+        debugWindow.setId(R.id.debugWindow);
+        debugWindow.setText("FPS: --");
+        debugWindow.setTextColor(Color.WHITE);
+        debugWindow.setTextSize(20.0f);
+
+        RelativeLayout.LayoutParams debugLayout = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT);
+        debugWindow.setLayoutParams(debugLayout);
+        consoleLayout.addView(debugWindow);
+
+
+        mGLView.init(debugWindow, this);
+
+
     }
+
+
 
     @Override
     protected void onPause() {
@@ -108,5 +133,7 @@ public class MainActivity extends Activity {
         super.onDestroy();
         mGLView.onPause();
     }
+
+
 
 }
