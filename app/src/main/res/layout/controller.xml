@@ -27,6 +27,7 @@
             android:text="@string/cntr_right_btn"
             android:id="@+id/cntr_right_btn"
             android:layout_gravity="center_vertical" />
+
     </LinearLayout>
 
     <Button
@@ -44,4 +45,5 @@
         android:id="@+id/cntr_down_btn"
         android:layout_below="@+id/linearLayout"
         android:layout_centerHorizontal="true" />
+
 </RelativeLayout>

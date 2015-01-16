@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -50,18 +51,19 @@ public class MainActivity extends Activity {
         mGLView.setId(R.id.mglview);
 
         // Now we create the controller
-        RelativeLayout controllerLayout = new RelativeLayout(this);
-        controllerLayout.setId(R.id.controllerview);
+        RelativeLayout controllerFrameLayout = new RelativeLayout(this);
+        controllerFrameLayout.setId(R.id.controller_frame_layout);
 
-        RelativeLayout.LayoutParams controllerParams = new RelativeLayout.LayoutParams(
+        RelativeLayout.LayoutParams controllerFrameParams = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.MATCH_PARENT);
-        controllerParams.addRule(RelativeLayout.BELOW, mGLView.getId());
-        controllerLayout.setLayoutParams(controllerParams);
-        controllerLayout.setBackgroundColor(Color.BLACK);
+        controllerFrameParams.addRule(RelativeLayout.BELOW, mGLView.getId());
+        controllerFrameParams.addRule(RelativeLayout.RIGHT_OF, R.id.consoleview);
+        controllerFrameLayout.setLayoutParams(controllerFrameParams);
+        controllerFrameLayout.setBackgroundColor(Color.BLACK);
 
-        controllerLayout.getLayoutParams().height = height - width;
-        controllerLayout.getLayoutParams().width = width/2; // Take up half the width of the screen
+        controllerFrameLayout.getLayoutParams().height = height - width;
+        controllerFrameLayout.getLayoutParams().width = width/2; // Take up half the width of the screen
 
         RelativeLayout consoleLayout = new RelativeLayout(this);
         consoleLayout.setId(R.id.consoleview);
@@ -70,7 +72,6 @@ public class MainActivity extends Activity {
                 RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.MATCH_PARENT);
         consoleParams.addRule(RelativeLayout.BELOW, mGLView.getId());
-        consoleParams.addRule(RelativeLayout.RIGHT_OF, R.id.controller_view);
         consoleLayout.setLayoutParams(consoleParams);
         consoleLayout.setBackgroundColor(Color.BLACK);
 
@@ -78,7 +79,7 @@ public class MainActivity extends Activity {
         consoleLayout.getLayoutParams().width = width/2; // Take up half the width of the screen
 
         mLayout.addView(mGLView);
-        mLayout.addView(controllerLayout);
+        mLayout.addView(controllerFrameLayout);
         mLayout.addView(consoleLayout);
 
 
@@ -93,6 +94,14 @@ public class MainActivity extends Activity {
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
         debugWindow.setLayoutParams(debugLayout);
         consoleLayout.addView(debugWindow);
+
+        RelativeLayout.LayoutParams controllerViewParams = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.MATCH_PARENT,
+                RelativeLayout.LayoutParams.MATCH_PARENT);
+
+        View controllerView = getLayoutInflater().inflate(R.layout.controller , null);
+        controllerView.setLayoutParams(controllerViewParams);
+        controllerFrameLayout.addView(controllerView);
 
 
         mGLView.init(debugWindow, this);

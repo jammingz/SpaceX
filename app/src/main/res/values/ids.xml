@@ -2,7 +2,7 @@
 <resources>
 
     <item name="mglview" type="id"/>
-    <item name="controllerview" type="id"/>
+    <item name="controller_frame_layout" type="id"/>
     <item name="consoleview" type="id"/>
     <item name="debugWindow" type="id"/>
     <item name="controller_layout" type="id"/>
