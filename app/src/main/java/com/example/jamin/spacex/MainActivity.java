@@ -70,7 +70,7 @@ public class MainActivity extends Activity {
                 RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.MATCH_PARENT);
         consoleParams.addRule(RelativeLayout.BELOW, mGLView.getId());
-        consoleParams.addRule(RelativeLayout.RIGHT_OF, R.id.controllerview);
+        consoleParams.addRule(RelativeLayout.RIGHT_OF, R.id.controller_view);
         consoleLayout.setLayoutParams(consoleParams);
         consoleLayout.setBackgroundColor(Color.BLACK);
 
@@ -96,7 +96,6 @@ public class MainActivity extends Activity {
 
 
         mGLView.init(debugWindow, this);
-
 
     }
 

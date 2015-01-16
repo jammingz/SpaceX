@@ -4,5 +4,11 @@
     <string name="app_name">SpaceX</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="cntr_up_btn">Up</string>
+    <string name="cntr_down_btn">Down</string>
+    <string name="cntr_right_btn">Right</string>
+    <string name="cntr_left_btn">Left</string>
+
+
 
 </resources>
