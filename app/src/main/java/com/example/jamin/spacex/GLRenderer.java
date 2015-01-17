@@ -21,11 +21,12 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     private final float[] mViewMatrix = new float[16];
     private final float[] mRotationMatrix = new float[16];
 
-    private int mCounter;
     private float mAngle;
+    private static final float ANGLE_OFFSET = 0;//20.0f;
     private float mTranslationX;
     private float mTranslationY;
     private boolean mFirstDraw;
+
 
     public GLRenderer() {
         mFirstDraw = true;
@@ -40,20 +41,14 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
         mPacman = new Pacman(150,0.15f,1.0f,1.0f,0.2f,1.0f);
-        mAngle = 0; // Initialize angle to 0 degrees.
-        mCounter = 0;
+        mAngle = ANGLE_OFFSET; // Initialize angle to 0 degrees.
+
     }
 
     @Override
     public void onDrawFrame(GL10 unused) {
         float[] scratch = new float[16];
         float[] results = new float[16];
-        mCounter++;
-
-        if (mCounter >= 60) {
-            mCounter = 0;
-            rotateCW();
-        }
 
 
         // Draw background color
@@ -71,7 +66,8 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         // Leave this code out when using TouchEvents.
         // long time = SystemClock.uptimeMillis() % 4000L;
         // float angle = 0.090f * ((int) time);
-        Matrix.setRotateM(mRotationMatrix, 0, mAngle, 0, 0, 1.0f);
+        Matrix.setRotateM(mRotationMatrix, 0, mAngle, 0,1.0f,0);//, 1.0f);
+
 
         // Combine the rotation matrix with the projection and camera view
         // Note that the mMVPMatrix factor *must be first* in order
@@ -90,6 +86,8 @@ public class GLRenderer implements GLSurfaceView.Renderer {
             mPacman.nextFrame();
         }
         mPacman.draw(results);
+        mAngle++;
+        mAngle = mAngle % 360;
     }
 
     @Override
@@ -171,6 +169,24 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 
     public void rotateCCW() {
         mAngle = PacMath.modulus((int) mAngle - 90,360); // Add 90 mod(360) to current angle
+    }
+
+    public void rotatePacman(int direction) {
+        switch (direction) {
+            case Pacman.FACE_LEFT:
+                mAngle = 0;
+                break;
+            case Pacman.FACE_DOWN:
+                mAngle = 270;
+                break;
+            case Pacman.FACE_RIGHT:
+                mAngle = 180;
+                break;
+            case Pacman.FACE_UP:
+                mAngle = 90;
+                break;
+        }
+        mAngle += ANGLE_OFFSET;
     }
 
     public void setTranslation(float dx, float dy) {

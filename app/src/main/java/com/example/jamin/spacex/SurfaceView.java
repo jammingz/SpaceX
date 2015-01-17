@@ -25,6 +25,7 @@ public class SurfaceView extends GLSurfaceView {
     int stop;
     boolean needsUpdate;
     int currentFPS;
+
     private TextView debugWindow;
     private Activity mActivity;
     private Long currentTime;
@@ -167,6 +168,11 @@ public class SurfaceView extends GLSurfaceView {
             return null;
         }
 
+    }
+
+    // Methods for rotating Pacman
+    public void rotatePacman(int direction) {
+        mRenderer.rotatePacman(direction);
     }
 
 }

@@ -17,33 +17,37 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/cntr_left_btn"
-            android:id="@+id/cntr_left_butn"
-            android:layout_gravity="center_vertical" />
+            android:id="@+id/cntr_left_btn"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/left_button"
+            android:clickable="true"
+            android:nestedScrollingEnabled="true"
+            android:focusable="false" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/cntr_right_btn"
             android:id="@+id/cntr_right_btn"
-            android:layout_gravity="center_vertical" />
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/right_button" />
 
     </LinearLayout>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/cntr_up_btn"
         android:id="@+id/cntr_up_btn"
         android:layout_above="@+id/linearLayout"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/up_button" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/cntr_down_btn"
         android:id="@+id/cntr_down_btn"
         android:layout_below="@+id/linearLayout"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/down_button"
+        android:singleLine="false" />
 
 </RelativeLayout>

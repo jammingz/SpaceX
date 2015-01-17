@@ -11,6 +11,7 @@ import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -105,6 +106,41 @@ public class MainActivity extends Activity {
 
 
         mGLView.init(debugWindow, this);
+
+        // Setting up button logic
+        final Button upButton = (Button) findViewById(R.id.cntr_up_btn);
+        final Button leftButton = (Button) findViewById(R.id.cntr_left_btn);
+        final Button downButton = (Button) findViewById(R.id.cntr_down_btn);
+        final Button rightButton = (Button) findViewById(R.id.cntr_right_btn);
+
+
+        upButton.setOnClickListener(new View.OnClickListener(){
+            public void onClick(View v) {
+                // Up button is pressed
+                mGLView.rotatePacman(Pacman.FACE_UP);
+            }
+        });
+
+        leftButton.setOnClickListener(new View.OnClickListener(){
+            public void onClick(View v) {
+                // Left button is pressed
+                mGLView.rotatePacman(Pacman.FACE_LEFT);
+            }
+        });
+
+        rightButton.setOnClickListener(new View.OnClickListener(){
+            public void onClick(View v) {
+                // Right button is pressed
+                mGLView.rotatePacman(Pacman.FACE_RIGHT);
+            }
+        });
+
+        downButton.setOnClickListener(new View.OnClickListener(){
+            public void onClick(View v) {
+                // Down button is pressed
+                mGLView.rotatePacman(Pacman.FACE_DOWN);
+            }
+        });
 
     }
 

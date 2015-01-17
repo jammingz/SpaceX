@@ -33,6 +33,14 @@ public class Pacman {
                     "  gl_FragColor = vColor;" +
                     "}";
 
+    protected static final int FACE_LEFT = 0;
+    protected static final int FACE_UP = 1;
+    protected static final int FACE_RIGHT = 2;
+    protected static final int FACE_DOWN = 3;
+    protected static final int SIDE_LEFT = 0;
+    protected static final int SIDE_RIGHT = 1;
+
+
     private FloatBuffer vertexBuffer;
     // private final ShortBuffer drawListBuffer;
     private final int mProgram;
@@ -87,7 +95,7 @@ public class Pacman {
             maxVertex = 40;
         }
 
-        minVertex = (int) Math.round(0.85 * maxVertex);
+        minVertex = (int) Math.round(0.80 * maxVertex);
 
         if (radius <= 0 || radius > 1) {
             this.radius = 1;
