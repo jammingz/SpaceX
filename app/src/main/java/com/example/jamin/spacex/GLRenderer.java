@@ -22,7 +22,10 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     private final float[] mRotationMatrix = new float[16];
 
     private float mAngle;
-    private static final float ANGLE_OFFSET = 0;//20.0f;
+    private int mPacmanSide; // {0: Pacman is showing right side of race, 1: Pacman is showing left side of face. Orthogonal to the screen and is facing the user}
+    private int mLastDirection;
+    private boolean mFlipFlag; // Determines if we need to flip upon next render
+    private static final float ANGLE_OFFSET = 15.0f;
     private float mTranslationX;
     private float mTranslationY;
     private boolean mFirstDraw;
@@ -40,8 +43,11 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         // Set the background frame color
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-        mPacman = new Pacman(150,0.15f,1.0f,1.0f,0.2f,1.0f);
+        mPacman = new Pacman(150,0.3f,1.0f,1.0f,0.2f,1.0f);
         mAngle = ANGLE_OFFSET; // Initialize angle to 0 degrees.
+        mPacmanSide = 0; // Initialize at seeing right side
+        mLastDirection = 4; // 4 is null. no last direction
+        mFlipFlag = false;
 
     }
 
@@ -55,7 +61,7 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
         // Set the camera position (View matrix)
-        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -4.0f, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
 
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
@@ -66,8 +72,12 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         // Leave this code out when using TouchEvents.
         // long time = SystemClock.uptimeMillis() % 4000L;
         // float angle = 0.090f * ((int) time);
-        Matrix.setRotateM(mRotationMatrix, 0, mAngle, 0,1.0f,0);//, 1.0f);
 
+        if (mPacmanSide == 1) {
+            flip(mAngle);
+        } else {
+            Matrix.setRotateM(mRotationMatrix, 0, mAngle, 0, 0, 1.0f);
+        }
 
         // Combine the rotation matrix with the projection and camera view
         // Note that the mMVPMatrix factor *must be first* in order
@@ -75,6 +85,12 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, mRotationMatrix, 0);
 
         Matrix.translateM(results, 0, scratch, 0, mTranslationX, mTranslationY, 0);
+
+        // Set the camera position (View matrix)
+        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -4.0f, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+
+        // Calculate the projection and view transformation
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
 
         // Draw Pacman
 
@@ -86,7 +102,6 @@ public class GLRenderer implements GLSurfaceView.Renderer {
             mPacman.nextFrame();
         }
         mPacman.draw(results);
-        mAngle++;
         mAngle = mAngle % 360;
     }
 
@@ -171,18 +186,42 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         mAngle = PacMath.modulus((int) mAngle - 90,360); // Add 90 mod(360) to current angle
     }
 
+    public void flip(float angle) {
+        float[] z_rotate = new float[16];
+        float[] y_rotate = new float[16];
+        float zAngle = (angle + 180 - 2 * ANGLE_OFFSET) % 360; // after flip, rotate 180 degrees to get correct direction
+        Matrix.setRotateM(z_rotate, 0, zAngle, 0,0,1.0f);
+        Matrix.setRotateM(y_rotate,0,180,0,1.0f,0);
+
+        Matrix.multiplyMM(mRotationMatrix,0,z_rotate,0,y_rotate,0);
+    }
+
     public void rotatePacman(int direction) {
         switch (direction) {
             case Pacman.FACE_LEFT:
                 mAngle = 0;
+                if (mLastDirection == Pacman.FACE_LEFT && mPacmanSide == 1) {
+                    mPacmanSide = 0;
+                    mLastDirection = 4; // Reset to null
+                } else {
+                    mLastDirection = Pacman.FACE_LEFT;
+                }
                 break;
             case Pacman.FACE_DOWN:
                 mAngle = 270;
+                mLastDirection = Pacman.FACE_DOWN;
                 break;
             case Pacman.FACE_RIGHT:
+                if (mLastDirection == Pacman.FACE_RIGHT && mPacmanSide == 0) {
+                    mPacmanSide = 1;
+                    mLastDirection = 4; // Reset to null
+                } else {
+                    mLastDirection = Pacman.FACE_RIGHT;
+                }
                 mAngle = 180;
                 break;
             case Pacman.FACE_UP:
+                mLastDirection = Pacman.FACE_UP;
                 mAngle = 90;
                 break;
         }
