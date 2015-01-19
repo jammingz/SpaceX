@@ -1,5 +1,6 @@
 package com.example.jamin.spacex;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -11,6 +12,7 @@ import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -64,7 +66,7 @@ public class MainActivity extends Activity {
         controllerFrameLayout.setBackgroundColor(Color.BLACK);
 
         controllerFrameLayout.getLayoutParams().height = height - width;
-        controllerFrameLayout.getLayoutParams().width = width/2; // Take up half the width of the screen
+        controllerFrameLayout.getLayoutParams().width = width*2/3; // Take up half the width of the screen
 
         RelativeLayout consoleLayout = new RelativeLayout(this);
         consoleLayout.setId(R.id.consoleview);
@@ -77,7 +79,7 @@ public class MainActivity extends Activity {
         consoleLayout.setBackgroundColor(Color.BLACK);
 
         consoleLayout.getLayoutParams().height = height - width;
-        consoleLayout.getLayoutParams().width = width/2; // Take up half the width of the screen
+        consoleLayout.getLayoutParams().width = width/3; // Take up half the width of the screen
 
         mLayout.addView(mGLView);
         mLayout.addView(controllerFrameLayout);
@@ -114,7 +116,7 @@ public class MainActivity extends Activity {
         final Button rightButton = (Button) findViewById(R.id.cntr_right_btn);
 
 
-        upButton.setOnClickListener(new View.OnClickListener(){
+        upButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Up button is pressed
                 mGLView.rotatePacman(Pacman.FACE_UP);

@@ -23,8 +23,6 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 
     private float mAngle;
     private int mPacmanSide; // {0: Pacman is showing right side of race, 1: Pacman is showing left side of face. Orthogonal to the screen and is facing the user}
-    private int mLastDirection;
-    private boolean mFlipFlag; // Determines if we need to flip upon next render
     private static final float ANGLE_OFFSET = 15.0f;
     private float mTranslationX;
     private float mTranslationY;
@@ -43,11 +41,9 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         // Set the background frame color
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-        mPacman = new Pacman(150,0.3f,1.0f,1.0f,0.2f,1.0f);
+        mPacman = new Pacman(150,0.25f,1.0f,1.0f,0.2f,1.0f);
         mAngle = ANGLE_OFFSET; // Initialize angle to 0 degrees.
         mPacmanSide = 0; // Initialize at seeing right side
-        mLastDirection = 4; // 4 is null. no last direction
-        mFlipFlag = false;
 
     }
 
@@ -55,6 +51,7 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 unused) {
         float[] scratch = new float[16];
         float[] results = new float[16];
+        float[] mTranslateM = new float[16];
 
 
         // Draw background color
@@ -65,6 +62,9 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
+
+
+        Matrix.translateM(mTranslateM, 0, -1.0f, -0.0f, 0);
 
         // Create a rotation for the triangle
 
@@ -82,9 +82,11 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         // Combine the rotation matrix with the projection and camera view
         // Note that the mMVPMatrix factor *must be first* in order
         // for the matrix multiplication product to be correct.
-        Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, mRotationMatrix, 0);
+        //Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, mRotationMatrix, 0);
+        Matrix.multiplyMM(results, 0, mMVPMatrix, 0, mTranslateM, 0);
 
-        Matrix.translateM(results, 0, scratch, 0, mTranslationX, mTranslationY, 0);
+        //Matrix.translateM(results, 0, scratch, 0, 1.33f, mTranslationY, 0);
+
 
         // Set the camera position (View matrix)
         Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -4.0f, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
@@ -200,28 +202,20 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         switch (direction) {
             case Pacman.FACE_LEFT:
                 mAngle = 0;
-                if (mLastDirection == Pacman.FACE_LEFT && mPacmanSide == 1) {
+                if (mPacmanSide == 1) {
                     mPacmanSide = 0;
-                    mLastDirection = 4; // Reset to null
-                } else {
-                    mLastDirection = Pacman.FACE_LEFT;
                 }
                 break;
             case Pacman.FACE_DOWN:
                 mAngle = 270;
-                mLastDirection = Pacman.FACE_DOWN;
                 break;
             case Pacman.FACE_RIGHT:
-                if (mLastDirection == Pacman.FACE_RIGHT && mPacmanSide == 0) {
+                if (mPacmanSide == 0) {
                     mPacmanSide = 1;
-                    mLastDirection = 4; // Reset to null
-                } else {
-                    mLastDirection = Pacman.FACE_RIGHT;
                 }
                 mAngle = 180;
                 break;
             case Pacman.FACE_UP:
-                mLastDirection = Pacman.FACE_UP;
                 mAngle = 90;
                 break;
         }
