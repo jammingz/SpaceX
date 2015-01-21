@@ -23,10 +23,11 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 
     private float mAngle;
     private int mPacmanSide; // {0: Pacman is showing right side of race, 1: Pacman is showing left side of face. Orthogonal to the screen and is facing the user}
-    private static final float ANGLE_OFFSET = 15.0f;
+    private static final float ANGLE_OFFSET = 0;
     private float mTranslationX;
     private float mTranslationY;
     private boolean mFirstDraw;
+
 
 
     public GLRenderer() {
@@ -42,9 +43,10 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
         mPacman = new Pacman(150,0.25f,1.0f,1.0f,0.2f,1.0f);
-        mAngle = ANGLE_OFFSET; // Initialize angle to 0 degrees.
+        mAngle = 0; // Initialize angle to 0 degrees.
         mPacmanSide = 0; // Initialize at seeing right side
-
+        mTranslationX = 0.5f;
+        mTranslationY = 0.5f;
     }
 
     @Override
@@ -58,13 +60,13 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
         // Set the camera position (View matrix)
-        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -4.0f, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -3.1f, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
 
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
 
 
-        Matrix.translateM(mTranslateM, 0, -1.0f, -0.0f, 0);
+        //Matrix.translateM(mTranslateM, 0, -1.0f, -0.0f, 0);
 
         // Create a rotation for the triangle
 
@@ -83,16 +85,19 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         // Note that the mMVPMatrix factor *must be first* in order
         // for the matrix multiplication product to be correct.
         //Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, mRotationMatrix, 0);
-        Matrix.multiplyMM(results, 0, mMVPMatrix, 0, mTranslateM, 0);
+        Matrix.multiplyMM(results, 0, mMVPMatrix, 0, mRotationMatrix, 0);
+
+        Matrix.translateM(results,0,convertTranslationX(mTranslationX,mTranslationY,mAngle,mPacmanSide),convertTranslationY(mTranslationX,mTranslationY,mAngle,mPacmanSide),0);
+        //Matrix.multiplyMM(results,0,results,0,mTranslateM,0);
 
         //Matrix.translateM(results, 0, scratch, 0, 1.33f, mTranslationY, 0);
 
 
         // Set the camera position (View matrix)
-        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -4.0f, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+        //Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -4.0f, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
 
         // Calculate the projection and view transformation
-        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
+        //Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
 
         // Draw Pacman
 
@@ -226,6 +231,44 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         mTranslationX = dx;
         mTranslationY = dy;
     }
+
+    public float convertTranslationX(float dx, float dy, float angle, int side) {
+        if (side == 0) { // Original face
+            switch ((int) angle) {
+                case 90:
+                    return dy;
+                case 0:
+                    return dx;
+                case 270:
+                    return -1 * dy;
+            }
+        } else {
+            switch ((int) angle) {
+                case 90:
+                    return -1 * dy;
+                case 180:
+                    return -1 * dx;
+                case 270:
+                    return dy;
+            }
+
+        }
+        return 0;
+    }
+
+    public float convertTranslationY(float dx, float dy, float angle, int side) {
+        switch ((int) angle) {
+            case 90:
+                return -1 * dx;
+            case 0:
+                return dy;
+            case 270:
+                return dx;
+        }
+
+        return dy;
+    }
+
 
     public void startAnimation() {
         mPacman.startAnimation();
