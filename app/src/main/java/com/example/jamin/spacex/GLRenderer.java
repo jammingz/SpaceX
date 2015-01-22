@@ -15,6 +15,7 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     private static final String TAG = "GLRenderer";
     private static final float VELOCITY_MAX = 0.01666667f;
     private Pacman mPacman;
+    private Wall mWall;
 
     // mMVPMatrix is an abbreviation for "Model View Projection Matrix"
     private final float[] mMVPMatrix = new float[16];
@@ -52,6 +53,8 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         mTranslationY = -0.5f;
         mVelocityX = 0;
         mVelocityY = 0;
+
+        mWall = new Wall(0.7f,0.1f,0,0.7f);
     }
 
     @Override
@@ -121,6 +124,8 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 
         mPacman.draw(results);
         mAngle = mAngle % 360;
+
+        mWall.draw(mMVPMatrix);
     }
 
     @Override

@@ -44,7 +44,7 @@ public class Wall {
 
     // number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 3;
-    private float squareCoords;
+    private float squareCoords[];
 
     private final short drawOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
 
@@ -56,7 +56,7 @@ public class Wall {
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
     public Wall() {
-
+        this(1.0f,1.0f,0,0);
     }
 
 
@@ -65,6 +65,21 @@ public class Wall {
         this.width = width;
         this.centerX = centerX;
         this.centerY = centerY;
+
+        float topLeftX = centerX + width/2;
+        float topLeftY = centerY + height/2;
+        float botLeftX = topLeftX;
+        float botLeftY = centerY - height/2;
+        float botRightX = centerX - width/2;
+        float botRightY = botLeftY;
+        float topRightX = botRightX;
+        float topRightY = topLeftY;
+
+        squareCoords = new float[] {
+                topLeftX,  topLeftY, 0.0f,   // top left
+                botLeftX, botLeftY, 0.0f,   // bottom left
+                botRightX, botRightY, 0.0f,   // bottom right
+                topRightX,  topRightY, 0.0f }; // top right
 
         // initialize vertex byte buffer for shape coordinates
         ByteBuffer bb = ByteBuffer.allocateDirect(
@@ -97,11 +112,7 @@ public class Wall {
         GLES20.glAttachShader(mProgram, fragmentShader); // add the fragment shader to program
         GLES20.glLinkProgram(mProgram);                  // create OpenGL program executables
 
-        squareCoords =  {
-            -0.5f,  0.5f, 0.0f,   // top left
-                    -0.5f, -0.5f, 0.0f,   // bottom left
-                    0.5f, -0.5f, 0.0f,   // bottom right
-                    0.5f,  0.5f, 0.0f }; // top right
+
 
     }
     /**
