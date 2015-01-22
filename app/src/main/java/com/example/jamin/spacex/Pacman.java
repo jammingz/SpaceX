@@ -246,6 +246,10 @@ public class Pacman {
         return details[4];
     }
 
+    public float getRadius() {
+        return radius;
+    }
+
     // Setter Functions
     public void setPositionX(float value) {
         details[1] = value;

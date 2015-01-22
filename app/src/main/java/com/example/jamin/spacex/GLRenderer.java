@@ -13,6 +13,7 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class GLRenderer implements GLSurfaceView.Renderer {
     private static final String TAG = "GLRenderer";
+    private static final float VELOCITY_MAX = 0.01666667f;
     private Pacman mPacman;
 
     // mMVPMatrix is an abbreviation for "Model View Projection Matrix"
@@ -26,6 +27,8 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     private static final float ANGLE_OFFSET = 0;
     private float mTranslationX;
     private float mTranslationY;
+    private float mVelocityX;
+    private float mVelocityY;
     private boolean mFirstDraw;
 
 
@@ -42,11 +45,13 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         // Set the background frame color
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-        mPacman = new Pacman(150,0.25f,1.0f,1.0f,0.2f,1.0f);
+        mPacman = new Pacman(150,0.1f,1.0f,1.0f,0.2f,1.0f);
         mAngle = 0; // Initialize angle to 0 degrees.
         mPacmanSide = 0; // Initialize at seeing right side
-        mTranslationX = 0.5f;
-        mTranslationY = 0.5f;
+        mTranslationX = -0.5f;
+        mTranslationY = -0.5f;
+        mVelocityX = 0;
+        mVelocityY = 0;
     }
 
     @Override
@@ -54,6 +59,13 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         float[] scratch = new float[16];
         float[] results = new float[16];
         float[] mTranslateM = new float[16];
+
+        if (mFirstDraw) {
+            mFirstDraw = false;
+        } else {
+            setTranslation();
+            mPacman.nextFrame();
+        }
 
 
         // Draw background color
@@ -87,7 +99,10 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         //Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, mRotationMatrix, 0);
         Matrix.multiplyMM(results, 0, mMVPMatrix, 0, mRotationMatrix, 0);
 
-        Matrix.translateM(results,0,convertTranslationX(mTranslationX,mTranslationY,mAngle,mPacmanSide),convertTranslationY(mTranslationX,mTranslationY,mAngle,mPacmanSide),0);
+        float projectedTransX = convertTranslationX(mTranslationX,mTranslationY,mAngle,mPacmanSide);
+        float projectedTransY = convertTranslationY(mTranslationX,mTranslationY,mAngle,mPacmanSide);
+
+        Matrix.translateM(results,0,projectedTransX,projectedTransY,0);
         //Matrix.multiplyMM(results,0,results,0,mTranslateM,0);
 
         //Matrix.translateM(results, 0, scratch, 0, 1.33f, mTranslationY, 0);
@@ -103,11 +118,7 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 
         // iterate mouth shape if this is not the first drawing of pacman
 
-        if (mFirstDraw) {
-            mFirstDraw = false;
-        } else {
-            mPacman.nextFrame();
-        }
+
         mPacman.draw(results);
         mAngle = mAngle % 360;
     }
@@ -178,6 +189,36 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         return mAngle;
     }
 
+    public void setTranslation() {
+        float borderMagnitude = 1 - mPacman.getRadius();
+
+        switch ((int) mAngle) {
+            case 0: // Facing left
+                if (mTranslationX + VELOCITY_MAX <= borderMagnitude) {
+                    mTranslationX += VELOCITY_MAX; // move left only if we haven't hit boundary
+                }
+                break;
+
+            case 90: // facing up
+                if (mTranslationY + VELOCITY_MAX <= borderMagnitude) {
+                    mTranslationY += VELOCITY_MAX; // move up only if we haven't hit boundary
+                }
+                break;
+
+            case 180: // facing right
+                if (mTranslationX - VELOCITY_MAX >= (-1 * borderMagnitude)) {
+                    mTranslationX -= VELOCITY_MAX; // move right only if we haven't hit boundary
+                }
+                break;
+
+            case 270:
+                if (mTranslationY - VELOCITY_MAX >= (-1 * borderMagnitude)) {
+                    mTranslationY -= VELOCITY_MAX; // move down only if we haven't hit boundary
+                }
+                break;
+        }
+    }
+
     /**
      * Sets the rotation angle of the triangle shape (mPacman).
      */
@@ -227,10 +268,6 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         mAngle += ANGLE_OFFSET;
     }
 
-    public void setTranslation(float dx, float dy) {
-        mTranslationX = dx;
-        mTranslationY = dy;
-    }
 
     public float convertTranslationX(float dx, float dy, float angle, int side) {
         if (side == 0) { // Original face
@@ -245,11 +282,11 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         } else {
             switch ((int) angle) {
                 case 90:
-                    return -1 * dy;
+                    return dy;
                 case 180:
                     return -1 * dx;
                 case 270:
-                    return dy;
+                    return -1 * dy;
             }
 
         }
@@ -257,13 +294,24 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     }
 
     public float convertTranslationY(float dx, float dy, float angle, int side) {
-        switch ((int) angle) {
-            case 90:
-                return -1 * dx;
-            case 0:
-                return dy;
-            case 270:
-                return dx;
+        if (side == 0) {
+            switch ((int) angle) {
+                case 90:
+                    return -1 * dx;
+                case 0:
+                    return dy;
+                case 270:
+                    return dx;
+            }
+        } else {
+            switch ((int) angle) {
+                case 90:
+                    return dx;
+                case 0:
+                    return dy;
+                case 270:
+                    return -1 * dx;
+            }
         }
 
         return dy;
