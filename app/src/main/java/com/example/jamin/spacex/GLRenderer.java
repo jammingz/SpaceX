@@ -49,12 +49,12 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         mPacman = new Pacman(150,0.1f,1.0f,1.0f,0.2f,1.0f);
         mAngle = 0; // Initialize angle to 0 degrees.
         mPacmanSide = 0; // Initialize at seeing right side
-        mTranslationX = -0.5f;
-        mTranslationY = -0.5f;
+        mTranslationX = 0;
+        mTranslationY = 0;
         mVelocityX = 0;
         mVelocityY = 0;
 
-        mWall = new Wall(0.7f,0.1f,0,0.7f);
+        mWall = new Wall(1.0f,1.0f,1.0f,1.0f);
     }
 
     @Override
@@ -401,5 +401,10 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 
     public void reset() {
         mPacman.resetPosition();
+    }
+
+    public boolean collisionDetection(Pacman creature, Wall wall) {
+        creature.or
+        creature.getRadius();
     }
 }

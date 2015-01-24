@@ -39,8 +39,8 @@ public class Wall {
     private int mMVPMatrixHandle;
     private float height;
     private float width;
-    private float centerX;
-    private float centerY;
+    private float originX;
+    private float originY;
 
     // number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 3;
@@ -60,17 +60,17 @@ public class Wall {
     }
 
 
-    public Wall(float width, float height, float centerX, float centerY) {
+    public Wall(float originX, float originY, float width, float height) {
         this.height = height;
         this.width = width;
-        this.centerX = centerX;
-        this.centerY = centerY;
+        this.originX = originX;
+        this.originY = originY;
 
-        float topLeftX = centerX + width/2;
-        float topLeftY = centerY + height/2;
+        float topLeftX = originX;
+        float topLeftY = originY;
         float botLeftX = topLeftX;
-        float botLeftY = centerY - height/2;
-        float botRightX = centerX - width/2;
+        float botLeftY = originY - height;
+        float botRightX = originX - width;
         float botRightY = botLeftY;
         float topRightX = botRightX;
         float topRightY = topLeftY;
