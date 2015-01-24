@@ -56,11 +56,6 @@ public class SurfaceView extends GLSurfaceView {
     private float mPreviousY;
 
 
-    public void reset() {
-        mRenderer.reset();
-        requestRender();
-    }
-
     public void init(TextView view, Activity activity) {
         debugWindow = view;
         mActivity = activity;

@@ -161,6 +161,21 @@ public class Wall {
     }
 
 
+    public float getOriginX() {
+        return originX;
+    }
+
+    public float getOriginY() {
+        return originY;
+    }
+
+    public float getHeight() {
+        return height;
+    }
+
+    public float getWidth() {
+        return width;
+    }
 
 
 }

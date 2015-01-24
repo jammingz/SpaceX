@@ -53,15 +53,8 @@ public class Pacman {
     private boolean isAnimating = false;
     private int mLastIteration;
     private int mDirection; // Direction which Pacman is facing. {0:left, 1:up, 2:right, 3:down}
-
-    // **FIX LATER!**
-    private float details[] = new float[6];
-                                /*	{ X: { velocity_x, position_x},		details[0], details[1]
-     							*	  Y: { velocity_y, position_y},		details[2], details[3]
-     							*	  Z: { velocity_z, position_z},		details[4], details[5]
-     							*	}
-     							*
-     							*/
+    private float originX;
+    private float originY;
 
 
 
@@ -92,10 +85,12 @@ public class Pacman {
         if(vertexCount > 0) {
             maxVertex = vertexCount;
         } else {
-            maxVertex = 40;
+            maxVertex = 150;
         }
 
         minVertex = (int) Math.round(0.80 * maxVertex);
+        originX = 1 * radius;
+        originY = 1 * radius;
 
         if (radius <= 0 || radius > 1) {
             this.radius = 1;
@@ -107,14 +102,6 @@ public class Pacman {
         color[1] = colorB;
         color[2] = colorG;
         color[3] = colorA;
-
-        details[0] = 0.0f;
-        details[1] = 0.0f;
-        details[2] = 0.0f;
-        details[3] = 0.0f;
-        details[4] = 0.0f;
-        details[5] = 0.0f;
-        details[0] = 0.0f;
 
         mDirection = 0; // Initially face left
         mLastIteration = 0;
@@ -222,57 +209,23 @@ public class Pacman {
 
 
     // Getter Functions
-    public float getPositionX() {
-        return details[1];
-    }
-
-    public float getPositionY() {
-        return details[3];
-    }
-
-    public float getPositionZ() {
-        return details[5];
-    }
-
-    public float getVelocityX() {
-        return details[0];
-    }
-
-    public float getVelocityY() {
-        return details[2];
-    }
-
-    public float getVelocityZ() {
-        return details[4];
-    }
-
+    public float getHeight() {return originY - 2 * radius;}
+    public float getWidth() {return originX - 2 * radius;}
     public float getRadius() {
         return radius;
     }
+    public float getOriginX() {
+        return originX;
+    }
+    public float getOriginY() {
+        return originY;
+    }
 
     // Setter Functions
-    public void setPositionX(float value) {
-        details[1] = value;
-    }
 
-    public void setPositionY(float value) {
-        details[3] = value;
-    }
-
-    public void setPositionZ(float value) {
-        details[5] = value;
-    }
-
-    public void setVelictyX(float value) {
-        details[0] = value;
-    }
-
-    public void setVelictyY(float value) {
-        details[2] = value;
-    }
-
-    public void setVelictyZ(float value) {
-        details[4] = value;
+    public void setOrigin(float newX, float newY) {
+        originX = newX;
+        originY = newY;
     }
 
     // IMPLEMENT LATER!
@@ -284,8 +237,6 @@ public class Pacman {
         return 0;
     }
 
-    public void resetPosition() {
-    }
 
     public void nextFrame() {
         mLastIteration += 2;
