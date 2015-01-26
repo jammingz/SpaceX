@@ -37,10 +37,7 @@ public class Wall {
     private int mPositionHandle;
     private int mColorHandle;
     private int mMVPMatrixHandle;
-    private float height;
-    private float width;
-    private float originX;
-    private float originY;
+    private Frame mFrame;
 
     // number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 3;
@@ -61,10 +58,7 @@ public class Wall {
 
 
     public Wall(float originX, float originY, float width, float height) {
-        this.height = height;
-        this.width = width;
-        this.originX = originX;
-        this.originY = originY;
+        mFrame = new Frame(originX,originY,width,height);
 
         float topLeftX = originX;
         float topLeftY = originY;
@@ -162,19 +156,19 @@ public class Wall {
 
 
     public float getOriginX() {
-        return originX;
+        return mFrame.getOriginX();
     }
 
     public float getOriginY() {
-        return originY;
+        return mFrame.getOriginY();
     }
 
     public float getHeight() {
-        return height;
+        return mFrame.getHeight();
     }
 
     public float getWidth() {
-        return width;
+        return mFrame.getWidth();
     }
 
 

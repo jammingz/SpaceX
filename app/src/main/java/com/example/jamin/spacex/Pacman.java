@@ -49,12 +49,11 @@ public class Pacman {
     private int mMVPMatrixHandle;
     private int minVertex;
     private int maxVertex;
+    private Frame mFrame;
     private float radius; // Full screen radius = 1.0f
     private boolean isAnimating = false;
     private int mLastIteration;
     private int mDirection; // Direction which Pacman is facing. {0:left, 1:up, 2:right, 3:down}
-    private float originX;
-    private float originY;
 
 
 
@@ -89,8 +88,17 @@ public class Pacman {
         }
 
         minVertex = (int) Math.round(0.80 * maxVertex);
-        originX = 1 * radius;
-        originY = 1 * radius;
+
+        // Creating frame object for Pacman
+
+        float x = radius;
+        float y = radius;
+        float width = 2 * radius;
+        float height = 2 * radius;
+
+        mFrame = new Frame(x,y,width,height);
+
+
 
         if (radius <= 0 || radius > 1) {
             this.radius = 1;
@@ -209,23 +217,27 @@ public class Pacman {
 
 
     // Getter Functions
-    public float getHeight() {return originY - 2 * radius;}
-    public float getWidth() {return originX - 2 * radius;}
+    public float getHeight() {return mFrame.getHeight();}
+    public float getWidth() {return mFrame.getWidth();}
     public float getRadius() {
         return radius;
     }
     public float getOriginX() {
-        return originX;
+        return mFrame.getOriginX();
     }
     public float getOriginY() {
-        return originY;
+        return mFrame.getOriginY();
     }
 
     // Setter Functions
 
     public void setOrigin(float newX, float newY) {
-        originX = newX;
-        originY = newY;
+        mFrame.setOriginX(newX);
+        mFrame.setOriginY(newY);
+    }
+
+    public Frame getFrame() {
+        return mFrame;
     }
 
     // IMPLEMENT LATER!

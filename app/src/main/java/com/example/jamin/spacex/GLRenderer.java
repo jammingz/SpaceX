@@ -5,6 +5,9 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -13,9 +16,9 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class GLRenderer implements GLSurfaceView.Renderer {
     private static final String TAG = "GLRenderer";
-    private static final float VELOCITY_MAX = 0.01666667f;
+    private static final float VELOCITY_MAX = 0.015f; // 120 x 120 movements for pacman
     private Pacman mPacman;
-    private Wall mWall;
+    private ArrayList<Wall> mWalls;
 
     // mMVPMatrix is an abbreviation for "Model View Projection Matrix"
     private final float[] mMVPMatrix = new float[16];
@@ -46,7 +49,15 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         mAngle = 0; // Initialize angle to 0 degrees.
         mPacmanSide = 0; // Initialize at seeing right side
 
-        mWall = new Wall(1.0f,1.0f,1.0f,0.2f);
+        Wall wall1 = new Wall(1.0f,1.0f,1.0f,0.2f);
+        Wall wall2 = new Wall(0.4f,-0.5f,0.4f,0.2f);
+        Wall wall3 = new Wall(-0.5f,0.7f,0.2f,1.0f);
+        Wall wall4 = new Wall(1.0f,0.8f,0.2f,1.0f);
+        mWalls = new ArrayList<Wall>();
+        mWalls.add(wall1);
+        mWalls.add(wall2);
+        mWalls.add(wall3);
+        mWalls.add(wall4);
     }
 
     @Override
@@ -119,7 +130,12 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         mPacman.draw(results);
         mAngle = mAngle % 360;
 
-        mWall.draw(mMVPMatrix);
+        // Draw all the walls
+        Iterator<Wall> wallIter = mWalls.iterator();
+        while (wallIter.hasNext()) {
+            Wall curWall = wallIter.next();
+            curWall.draw(mMVPMatrix);
+        }
     }
 
     @Override
@@ -133,7 +149,6 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         // this projection matrix is applied to object coordinates
         // in the onDrawFrame() method
         Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
-
     }
 
     /**
@@ -196,25 +211,25 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 
         switch ((int) mAngle) {
             case 0: // Facing left
-                if (creatureLeft + VELOCITY_MAX <= 1.0f) {
+                if (creatureLeft + VELOCITY_MAX <= 1.0f && !collisionDetection(mPacman,Frame.SHIFT_LEFT)) {
                     creature.setOrigin(creatureLeft + VELOCITY_MAX,creature.getOriginY()); // move left only if we haven't hit boundary
                 }
                 break;
 
             case 90: // facing up
-                if (creatureTop + VELOCITY_MAX <= 1.0f) {
+                if (creatureTop + VELOCITY_MAX <= 1.0f && !collisionDetection(mPacman,Frame.SHIFT_UP)) {
                     creature.setOrigin(creature.getOriginX(),creature.getOriginY() + VELOCITY_MAX); // move up only if we haven't hit boundary
                 }
                 break;
 
             case 180: // facing right
-                if (creatureRight - VELOCITY_MAX >= -1.0f) {
+                if (creatureRight - VELOCITY_MAX >= -1.0f && !collisionDetection(mPacman,Frame.SHIFT_RIGHT)) {
                     creature.setOrigin(creatureLeft - VELOCITY_MAX,creature.getOriginY()); // move right only if we haven't hit boundary
                 }
                 break;
 
-            case 270:
-                if (createBottom - VELOCITY_MAX >= -1.0f) {
+            case 270: // facing down
+                if (createBottom - VELOCITY_MAX >= -1.0f && !collisionDetection(mPacman,Frame.SHIFT_DOWN)) {
                 creature.setOrigin(creature.getOriginX(),creature.getOriginY() - VELOCITY_MAX); // move down only if we haven't hit boundary
                 }
                 break;
@@ -326,24 +341,30 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 
     public void stopAnimation() { mPacman.stopAnimation();}
 
-    public boolean collisionDetection(Pacman creature, Wall wall) {
-        float creatureLeft = creature.getOriginX();
-        float creatureTop = creature.getOriginY();
+    public boolean collisionDetection(Pacman creature, int direction) {
+        Frame newFrame = creature.getFrame().getShiftedFrame(direction,VELOCITY_MAX);
+
+        float creatureLeft = newFrame.getOriginX();
+        float creatureTop = newFrame.getOriginY();
         float creatureRadius = creature.getRadius();
         float creatureBottom = creatureTop - 2 * creatureRadius;
         float creatureRight = creatureLeft - 2 * creatureRadius;
 
-        float wallLeft = wall.getOriginX();
-        float wallTop = wall.getOriginY();
-        float wallHeight = wall.getHeight();
-        float wallWidth = wall.getWidth();
-        float wallRight = wallLeft - wallWidth;
-        float wallBottom = wallTop - wallHeight;
+        Iterator<Wall> wallIter = mWalls.iterator();
+        while (wallIter.hasNext()) {
+            Wall curWall = wallIter.next();
+            float wallLeft = curWall.getOriginX();
+            float wallTop = curWall.getOriginY();
+            float wallHeight = curWall.getHeight();
+            float wallWidth = curWall.getWidth();
+            float wallRight = wallLeft - wallWidth;
+            float wallBottom = wallTop - wallHeight;
 
-        if ((creatureLeft >= wallLeft && creatureLeft <= wallRight) || (creatureRight >= wallLeft && creatureRight <= wallRight)) {
-            // the wall and creature collide in the x axis. Lets confirm they also intersect in the y direction
-            if ((creatureTop >= wallTop) && (creatureTop <= wallBottom) || ((creatureBottom >= wallTop) && (creatureBottom <= wallBottom))) {
-                return true; // Only section where the creature and the wall intersects, both in x and y axis.
+            if ((creatureLeft <= wallLeft && creatureLeft >= wallRight) || (creatureRight <= wallLeft && creatureRight >= wallRight)) {
+                // the wall and creature collide in the x axis. Lets confirm they also intersect in the y direction
+                if ((creatureTop <= wallTop) && (creatureTop >= wallBottom) || ((creatureBottom <= wallTop) && (creatureBottom >= wallBottom))) {
+                    return true; // Only section where the creature and the wall intersects, both in x and y axis.
+                }
             }
         }
 
