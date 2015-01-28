@@ -12,7 +12,7 @@ import java.nio.FloatBuffer;
 /**
  * Created by jamin on 1/5/15.
  */
-public class Pacman {
+public class Pacman extends Monster {
 
     // This matrix member variable provides a hook to manipulate
     // the coordinates of the objects that use this vertex shader

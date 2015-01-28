@@ -10,7 +10,7 @@ import java.nio.ShortBuffer;
 /**
  * Created by jamin on 1/21/15.
  */
-public class Wall {
+public class Wall extends GameObject {
 
     private final String vertexShaderCode =
             // This matrix member variable provides a hook to manipulate
