@@ -1,5 +1,7 @@
 package com.example.jamin.spacex;
 
+import android.util.Log;
+
 /**
  * Created by jamin on 1/25/15.
  */
@@ -65,7 +67,7 @@ public class Frame {
             case SHIFT_UP:
                 return new Frame(originX, originY + amount, width, height);
         }
-
+        Log.e("Error: Frame.getShiftedFrame()","Returned original frame. Should never reach here.");
         return this; // should never get to this case
     }
 }

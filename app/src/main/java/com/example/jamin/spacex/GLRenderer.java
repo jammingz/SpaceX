@@ -17,8 +17,11 @@ import javax.microedition.khronos.opengles.GL10;
 public class GLRenderer implements GLSurfaceView.Renderer {
     private static final String TAG = "GLRenderer";
     private static final float VELOCITY_MAX = 0.015f; // 120 x 120 movements for pacman
+    private static final float COLLISION_MARGIN_ERROR = 0.00001f;
     private Pacman mPacman;
     private ArrayList<Wall> mWalls;
+    private ArrayList<Consumable> mConsumables;
+    private ArrayList<Food> mConsumedFoods;
 
     // mMVPMatrix is an abbreviation for "Model View Projection Matrix"
     private final float[] mMVPMatrix = new float[16];
@@ -32,12 +35,9 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     private boolean mFirstDraw;
 
 
-
     public GLRenderer() {
         mFirstDraw = true;
     }
-
-
 
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
@@ -49,11 +49,51 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         mAngle = 0; // Initialize angle to 0 degrees.
         mPacmanSide = 0; // Initialize at seeing right side
 
-        Wall wall1 = new Wall(-0.5f,1.0f,0.2f,0.5f);
-        Wall wall2 = new Wall(-0.5f,0.25f,0.2f,0.4f);
+        Wall wall1 = new Wall(-0.1f,1.0f,0.0375f,0.5f);
+        Wall wall2 = new Wall(0.175f,1.0f,0.0375f,0.4f);
+        //Wall wall3 = new Wall(-0.25f,1.0f,0.075f,0.5f);
         mWalls = new ArrayList<Wall>();
         mWalls.add(wall1);
         mWalls.add(wall2);
+        //mWalls.add(wall3);
+
+        mConsumedFoods = new ArrayList<Food>();
+        mConsumables = new ArrayList<Consumable>();
+
+        Consumable c1 = new Consumable(0.28f,0f);
+        Consumable c2 = new Consumable(0.34f,0f);
+        Consumable c3 = new Consumable(0.40f,0f);
+        Consumable c4 = new Consumable(0.46f,0f);
+        Consumable c5 = new Consumable(0.52f,0f);
+        Consumable c6 = new Consumable(0.58f,0f);
+        Consumable c7 = new Consumable(0.64f,0f);
+        Consumable c8 = new Consumable(0.70f,0f);
+        Consumable c9 = new Consumable(0.76f,0f);
+        Consumable c10 = new Consumable(0.76f,-.06f);
+        Consumable c11 = new Consumable(0.76f,-.12f);
+        Consumable c12 = new Consumable(0.76f,-.18f);
+        Consumable c13 = new Consumable(0.76f,-.24f);
+
+
+
+        mConsumables.add(c1);
+        mConsumables.add(c2);
+        mConsumables.add(c3);
+        mConsumables.add(c4);
+        mConsumables.add(c5);
+        mConsumables.add(c6);
+        mConsumables.add(c7);
+        mConsumables.add(c8);
+        mConsumables.add(c9);
+        mConsumables.add(c10);
+        mConsumables.add(c11);
+        mConsumables.add(c12);
+        mConsumables.add(c13);
+
+
+
+
+
     }
 
     @Override
@@ -132,6 +172,14 @@ public class GLRenderer implements GLSurfaceView.Renderer {
             Wall curWall = wallIter.next();
             curWall.draw(mMVPMatrix);
         }
+
+        // Draw all the consumables
+        Iterator<Consumable> consumableIter = mConsumables.iterator();
+        while (consumableIter.hasNext()) {
+            Consumable curConsumable = consumableIter.next();
+            curConsumable.draw(mMVPMatrix);
+        }
+
     }
 
     @Override
@@ -337,15 +385,16 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 
     public void stopAnimation() { mPacman.stopAnimation();}
 
+    // ** REMINDER** This takes in the predict path frame and NOT THE ACTUAL monster frame.
     public boolean collisionDetection(Pacman creature, int direction) {
         Frame newFrame = creature.getFrame().getShiftedFrame(direction,VELOCITY_MAX);
-
         float creatureLeft = newFrame.getOriginX();
         float creatureTop = newFrame.getOriginY();
         float creatureRadius = creature.getRadius();
         float creatureBottom = creatureTop - 2 * creatureRadius;
         float creatureRight = creatureLeft - 2 * creatureRadius;
 
+        // Check if pacman collides with any wall
         Iterator<Wall> wallIter = mWalls.iterator();
         while (wallIter.hasNext()) {
             Wall curWall = wallIter.next();
@@ -356,10 +405,35 @@ public class GLRenderer implements GLSurfaceView.Renderer {
             float wallRight = wallLeft - wallWidth;
             float wallBottom = wallTop - wallHeight;
 
-            if ((creatureLeft <= wallLeft && creatureLeft >= wallRight) || (creatureRight <= wallLeft && creatureRight >= wallRight)) {
+            //if ((creatureLeft < wallLeft && creatureLeft > wallRight) || (creatureRight < wallLeft && creatureRight > wallRight)) {
+            if ((creatureLeft < wallLeft && creatureLeft > wallRight && Math.abs(creatureLeft - wallRight) > COLLISION_MARGIN_ERROR) || (creatureRight < wallLeft && creatureRight > wallRight && Math.abs(creatureRight - wallLeft) > COLLISION_MARGIN_ERROR) || (creatureLeft > wallLeft && creatureRight < wallRight)) {
                 // the wall and creature collide in the x axis. Lets confirm they also intersect in the y direction
-                if ((creatureTop <= wallTop) && (creatureTop >= wallBottom) || ((creatureBottom <= wallTop) && (creatureBottom >= wallBottom))) {
+                //if ((creatureTop < wallTop) && (creatureTop > wallBottom) || ((creatureBottom < wallTop) && (creatureBottom > wallBottom))) {
+                if ((creatureTop < wallTop && creatureTop > wallBottom && Math.abs(creatureTop - wallBottom) > COLLISION_MARGIN_ERROR) || (creatureBottom < wallTop && creatureBottom > wallBottom && Math.abs(creatureBottom - wallTop) > COLLISION_MARGIN_ERROR) || (creatureTop > wallTop && creatureBottom < wallBottom)) {
                     return true; // Only section where the creature and the wall intersects, both in x and y axis.
+                }
+            }
+        }
+
+        // Checks if pacman collides with any food object
+        Iterator<Consumable> foodIter = mConsumables.iterator();
+        while (foodIter.hasNext()) {
+            Consumable curFood = foodIter.next();
+            float foodLeft = curFood.getOriginX();
+            float foodTop = curFood.getOriginY();
+            float foodLength = curFood.getHeight();
+            float foodRight = foodLeft - foodLength;
+            float foodBottom = foodTop - foodLength;
+
+            //if ((creatureLeft < wallLeft && creatureLeft > wallRight) || (creatureRight < wallLeft && creatureRight > wallRight)) {
+            if ((creatureLeft < foodLeft && creatureLeft > foodRight && Math.abs(creatureLeft - foodRight) > COLLISION_MARGIN_ERROR) || (creatureRight < foodLeft && creatureRight > foodRight && Math.abs(creatureRight - foodLeft) > COLLISION_MARGIN_ERROR) || (creatureLeft > foodLeft && creatureRight < foodRight)) {
+                // the wall and creature collide in the x axis. Lets confirm they also intersect in the y direction
+                //if ((creatureTop < wallTop) && (creatureTop > wallBottom) || ((creatureBottom < wallTop) && (creatureBottom > wallBottom))) {
+                if ((creatureTop < foodTop && creatureTop > foodBottom && Math.abs(creatureTop - foodBottom) > COLLISION_MARGIN_ERROR) || (creatureBottom < foodTop && creatureBottom > foodBottom && Math.abs(creatureBottom - foodTop) > COLLISION_MARGIN_ERROR) || (creatureTop > foodTop && creatureBottom < foodBottom)) {
+                    // pacman has obtained food item. We move food item into list of consumed foods
+                    mConsumedFoods.add(curFood);
+                    mConsumables.remove(curFood);
+                    break;
                 }
             }
         }

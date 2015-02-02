@@ -24,11 +24,11 @@ public class GameBoard {
 
 
     public GameObject getGameObject(int x, int y) throws NullPointerException{
-        return gamePieces[x][y]; // Returns object or returns null
+        return gamePieces[x][y]; // Returns object or returns null;
     }
 
     public boolean containsObject(int x, int y) {
-
+        return false;
     }
 
 }
