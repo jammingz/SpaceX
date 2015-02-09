@@ -16,8 +16,17 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class GLRenderer implements GLSurfaceView.Renderer {
     private static final String TAG = "GLRenderer";
-    private static final float VELOCITY_MAX = 0.015f; // 120 x 120 movements for pacman
+    private static final float VELOCITY_MAX = 0.01333333f; //140 x 140 movement //0.015f; // 120 x 120 movements for pacman
     private static final float COLLISION_MARGIN_ERROR = 0.00001f;
+    private static final float PACMAN_RADIUS = 0.066667f; // this radius gives us 15 pacman lengths across screen
+    private static final float WALL_LENGTH = 3 * VELOCITY_MAX;
+
+    private static final int LEFT_MOVE = 0;
+    private static final int UP_MOVE = 1;
+    private static final int RIGHT_MOVE = 2;
+    private static final int DOWN_MOVE = 3;
+
+
     private Pacman mPacman;
     private ArrayList<Wall> mWalls;
     private ArrayList<Consumable> mConsumables;
@@ -35,6 +44,7 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     private boolean mFirstDraw;
 
 
+
     public GLRenderer() {
         mFirstDraw = true;
     }
@@ -45,54 +55,56 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         // Set the background frame color
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-        mPacman = new Pacman(150,0.1f,1.0f,1.0f,0.2f,1.0f);
+        mPacman = new Pacman(150,PACMAN_RADIUS,1.0f,1.0f,0.2f,1.0f);
         mAngle = 0; // Initialize angle to 0 degrees.
         mPacmanSide = 0; // Initialize at seeing right side
 
-        Wall wall1 = new Wall(-0.1f,1.0f,0.0375f,0.5f);
-        Wall wall2 = new Wall(0.175f,1.0f,0.0375f,0.4f);
-        //Wall wall3 = new Wall(-0.25f,1.0f,0.075f,0.5f);
+        // Creating borders
+        Wall wall1 = new Wall(0.8567f,0.8567f,WALL_LENGTH,0.7333f);
+        Wall wall2 = new Wall(0.8267f,0.8667f,0.1733f,WALL_LENGTH);
+        Wall wall3 = new Wall(0.6933f,0.8267f,WALL_LENGTH,0.5199f); //0.8267f,WALL_LENGTH,0.6933f);
+        Wall wall4 = new Wall(0.8267f,0.1733f,0.1733f,WALL_LENGTH);
+        Wall wall5 = new Wall(0.6933f,0.1733f,WALL_LENGTH,0.4799f);
+        Wall wall6 = new Wall(0.52f,0.8667f,0.3869f,WALL_LENGTH);
+        Wall wall7 = new Wall(0.4801f,0.6933f,0.1733f,WALL_LENGTH);
+        Wall wall8 = new Wall(0.1733f,0.6933f,0.133f,WALL_LENGTH);
+        Wall wall9 = new Wall(0.5201f,0.6933f,WALL_LENGTH,0.3866f);
+        Wall wall10 = new Wall(0.3067f, 0.5199f, 0.2133f, WALL_LENGTH);
+        Wall wall11 = new Wall(0.52f, 0.3467f, 0.3067f, WALL_LENGTH);
+        Wall wall12 = new Wall(0.2133f,0.3467f,WALL_LENGTH,0.1733f);
+        Wall wall13 = new Wall(0.5201f,0.1733f,WALL_LENGTH,0.1733f);
         mWalls = new ArrayList<Wall>();
         mWalls.add(wall1);
         mWalls.add(wall2);
-        //mWalls.add(wall3);
+        mWalls.add(wall3);
+        mWalls.add(wall4);
+        //mWalls.add(wall5);
+        mWalls.add(wall6);
+        mWalls.add(wall7);
+        mWalls.add(wall8);
+        mWalls.add(wall9);
+        mWalls.add(wall10);
+        mWalls.add(wall11);
+        mWalls.add(wall12);
+        mWalls.add(wall13);
 
         mConsumedFoods = new ArrayList<Food>();
         mConsumables = new ArrayList<Consumable>();
 
-        Consumable c1 = new Consumable(0.28f,0f);
-        Consumable c2 = new Consumable(0.34f,0f);
-        Consumable c3 = new Consumable(0.40f,0f);
-        Consumable c4 = new Consumable(0.46f,0f);
-        Consumable c5 = new Consumable(0.52f,0f);
-        Consumable c6 = new Consumable(0.58f,0f);
-        Consumable c7 = new Consumable(0.64f,0f);
-        Consumable c8 = new Consumable(0.70f,0f);
-        Consumable c9 = new Consumable(0.76f,0f);
-        Consumable c10 = new Consumable(0.76f,-.06f);
-        Consumable c11 = new Consumable(0.76f,-.12f);
-        Consumable c12 = new Consumable(0.76f,-.18f);
-        Consumable c13 = new Consumable(0.76f,-.24f);
+
+        for (int i = 1; i < 8; i ++ ) {
+            Consumable c = new Consumable(2 * PACMAN_RADIUS * i,0f);
+            mConsumables.add(c);
+        }
+
+        for (int i = 1; i < 8; i ++ ) {
+            Consumable c = new Consumable(2 * PACMAN_RADIUS * 7, -2 * PACMAN_RADIUS * i);
+            mConsumables.add(c);
+        }
 
 
-
-        mConsumables.add(c1);
-        mConsumables.add(c2);
-        mConsumables.add(c3);
-        mConsumables.add(c4);
-        mConsumables.add(c5);
-        mConsumables.add(c6);
-        mConsumables.add(c7);
-        mConsumables.add(c8);
-        mConsumables.add(c9);
-        mConsumables.add(c10);
-        mConsumables.add(c11);
-        mConsumables.add(c12);
-        mConsumables.add(c13);
-
-
-
-
+        //Consumable c1 = new Consumable(0.4f,0f);
+        //mConsumables.add(c1);
 
     }
 
@@ -279,6 +291,38 @@ public class GLRenderer implements GLSurfaceView.Renderer {
                 break;
         }
     }
+
+    public ArrayList<Integer> getAvailableMoves(Pacman monster) {
+        ArrayList<Integer> availableMoves = new ArrayList<Integer>();
+        float monsterLeft = monster.getOriginX();
+        float monsterTop = monster.getOriginY();
+        float monsterRight = monsterLeft - 2 * monster.getWidth();
+        float monsterBottom = monsterTop - 2 * monster.getHeight();
+
+        if (monsterLeft + VELOCITY_MAX <= 1.0f && !collisionDetection(mPacman,Frame.SHIFT_LEFT)) {
+            // left move is available
+            availableMoves.add(LEFT_MOVE);
+        }
+
+        if (monsterTop + VELOCITY_MAX <= 1.0f && !collisionDetection(mPacman,Frame.SHIFT_UP)) {
+            // up move is available
+            availableMoves.add(UP_MOVE);
+
+        }
+
+        if (monsterRight - VELOCITY_MAX >= -1.0f && !collisionDetection(mPacman,Frame.SHIFT_RIGHT)) {
+            // right move is available
+            availableMoves.add(RIGHT_MOVE);
+
+        }
+
+        if (monsterBottom - VELOCITY_MAX >= -1.0f && !collisionDetection(mPacman,Frame.SHIFT_DOWN)) {
+            // down move is available
+            availableMoves.add(DOWN_MOVE);
+        }
+
+        return availableMoves;
+        }
 
     /**
      * Sets the rotation angle of the triangle shape (mPacman).
