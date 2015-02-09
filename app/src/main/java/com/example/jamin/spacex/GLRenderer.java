@@ -78,7 +78,7 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         mWalls.add(wall2);
         mWalls.add(wall3);
         mWalls.add(wall4);
-        //mWalls.add(wall5);
+        mWalls.add(wall5);
         mWalls.add(wall6);
         mWalls.add(wall7);
         mWalls.add(wall8);
@@ -449,11 +449,10 @@ public class GLRenderer implements GLSurfaceView.Renderer {
             float wallRight = wallLeft - wallWidth;
             float wallBottom = wallTop - wallHeight;
 
-            //if ((creatureLeft < wallLeft && creatureLeft > wallRight) || (creatureRight < wallLeft && creatureRight > wallRight)) {
             if ((creatureLeft < wallLeft && creatureLeft > wallRight && Math.abs(creatureLeft - wallRight) > COLLISION_MARGIN_ERROR) || (creatureRight < wallLeft && creatureRight > wallRight && Math.abs(creatureRight - wallLeft) > COLLISION_MARGIN_ERROR) || (creatureLeft > wallLeft && creatureRight < wallRight)) {
                 // the wall and creature collide in the x axis. Lets confirm they also intersect in the y direction
-                //if ((creatureTop < wallTop) && (creatureTop > wallBottom) || ((creatureBottom < wallTop) && (creatureBottom > wallBottom))) {
                 if ((creatureTop < wallTop && creatureTop > wallBottom && Math.abs(creatureTop - wallBottom) > COLLISION_MARGIN_ERROR) || (creatureBottom < wallTop && creatureBottom > wallBottom && Math.abs(creatureBottom - wallTop) > COLLISION_MARGIN_ERROR) || (creatureTop > wallTop && creatureBottom < wallBottom)) {
+                    Log.i("COLLISION", "pacman:{"+creatureLeft+","+creatureTop+","+creatureRight+","+creatureBottom+"}, wall: {"+wallLeft+","+wallTop+","+wallRight+","+wallBottom+"}");
                     return true; // Only section where the creature and the wall intersects, both in x and y axis.
                 }
             }
