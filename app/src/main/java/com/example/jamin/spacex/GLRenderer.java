@@ -21,6 +21,9 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     private static final float PACMAN_RADIUS = 0.066667f; // this radius gives us 15 pacman lengths across screen
     private static final float WALL_LENGTH = 3 * VELOCITY_MAX;
 
+    private float PACMAN_OFFSET_X;
+    private float PACMAN_OFFSET_Y;
+
     private static final int LEFT_MOVE = 0;
     private static final int UP_MOVE = 1;
     private static final int RIGHT_MOVE = 2;
@@ -46,7 +49,10 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 
 
     public GLRenderer() {
+
         mFirstDraw = true;
+        PACMAN_OFFSET_X = 1.0f;
+        PACMAN_OFFSET_Y = 1.0f;
     }
 
     @Override
@@ -56,23 +62,37 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
         mPacman = new Pacman(150,PACMAN_RADIUS,1.0f,1.0f,0.2f,1.0f);
+        mPacman.setOrigin(PACMAN_OFFSET_X,PACMAN_OFFSET_Y);
         mAngle = 0; // Initialize angle to 0 degrees.
         mPacmanSide = 0; // Initialize at seeing right side
 
         // Creating borders
-        Wall wall1 = new Wall(0.8567f,0.8567f,WALL_LENGTH,0.7333f);
-        Wall wall2 = new Wall(0.8267f,0.8667f,0.1733f,WALL_LENGTH);
-        Wall wall3 = new Wall(0.6933f,0.8267f,WALL_LENGTH,0.5199f); //0.8267f,WALL_LENGTH,0.6933f);
-        Wall wall4 = new Wall(0.8267f,0.1733f,0.1733f,WALL_LENGTH);
-        Wall wall5 = new Wall(0.6933f,0.1733f,WALL_LENGTH,0.4799f);
-        Wall wall6 = new Wall(0.52f,0.8667f,0.3869f,WALL_LENGTH);
-        Wall wall7 = new Wall(0.4801f,0.6933f,0.1733f,WALL_LENGTH);
-        Wall wall8 = new Wall(0.1733f,0.6933f,0.133f,WALL_LENGTH);
-        Wall wall9 = new Wall(0.5201f,0.6933f,WALL_LENGTH,0.3866f);
-        Wall wall10 = new Wall(0.3067f, 0.5199f, 0.2133f, WALL_LENGTH);
-        Wall wall11 = new Wall(0.52f, 0.3467f, 0.3067f, WALL_LENGTH);
-        Wall wall12 = new Wall(0.2133f,0.3467f,WALL_LENGTH,0.1733f);
-        Wall wall13 = new Wall(0.5201f,0.1733f,WALL_LENGTH,0.1733f);
+        Wall wall1 = new Wall(1 - gridLength(1,0),1 - gridLength(1,0),WALL_LENGTH,gridLength(4, 5));
+        Wall wall2 = new Wall(1 - gridLength(1,1),1 - gridLength(1,0),gridLength(1,1),WALL_LENGTH);
+        Wall wall3 = new Wall(1 - gridLength(2,1),1 - gridLength(1,1),WALL_LENGTH,0.5199f);
+        Wall wall4 = new Wall(1 - gridLength(1,1),1 - gridLength(5,4),gridLength(1,1),WALL_LENGTH);
+        Wall wall5 = new Wall(1 - gridLength(2,1),1 - gridLength(5,5),WALL_LENGTH,gridLength(3,2));
+        Wall wall6 = new Wall(1 - gridLength(1,0),1 - gridLength(6,5),WALL_LENGTH,gridLength(2,2));
+        Wall wall7 = new Wall(1 - gridLength(3,2),1 - gridLength(1,0),gridLength(2,3),WALL_LENGTH);
+        Wall wall8 = new Wall(1 - gridLength(3,3),1 - gridLength(2,1),gridLength(1,1),WALL_LENGTH);
+        Wall wall9 = new Wall(1 - gridLength(5,4),1 - gridLength(2,1),gridLength(1,1),WALL_LENGTH);
+        Wall wall10 = new Wall(1 - gridLength(3,2),1 - gridLength(2,1),WALL_LENGTH,gridLength(2,3));
+        Wall wall11 = new Wall(1 - gridLength(4,3),1 - gridLength(3,2),gridLength(1,2), WALL_LENGTH);
+        Wall wall12 = new Wall(1 - gridLength(3,3),1 - gridLength(4,3),gridLength(2,1), WALL_LENGTH);
+        Wall wall13 = new Wall(1 - gridLength(5,4),1 - gridLength(4,3),WALL_LENGTH,gridLength(1,1));
+        Wall wall14 = new Wall(1 - gridLength(3,2),1 - gridLength(5,4),WALL_LENGTH,gridLength(1,1));
+        Wall wall15 = new Wall(1 - gridLength(3,2),1 - gridLength(6,5),gridLength(4,5),WALL_LENGTH);
+        Wall wall16 = new Wall(1 - gridLength(3,2),1 - gridLength(7,6),gridLength(5,5),WALL_LENGTH);
+        Wall wall17 = new Wall(1 - gridLength(1,0),1 - gridLength(8,7),gridLength(6,7),WALL_LENGTH);
+        Wall wall18 = new Wall(1 - gridLength(6,5),1.0f,WALL_LENGTH,gridLength(6,5));
+        Wall wall19 = new Wall(1 - gridLength(7,6),1 - gridLength(5,4),WALL_LENGTH,gridLength(1,1));
+        Wall wall20 = new Wall(1 - gridLength(7,6),1 - gridLength(1,0),WALL_LENGTH,gridLength(3,3));
+        Wall wall21 = new Wall(1 - gridLength(7,6),1 - gridLength(4,3),gridLength(1,1),WALL_LENGTH);
+        Wall wall22 = new Wall(1 - gridLength(8,7),1.0f,WALL_LENGTH,gridLength(2,2));
+        Wall wall23 = new Wall(1 - gridLength(8,7),1 - gridLength(3,2),WALL_LENGTH,gridLength(6,7));
+
+        Wall border1 = new Wall(1.0f,1 - gridLength(9,8),gridLength(9,9),WALL_LENGTH);
+        Wall border2 = new Wall(1 - gridLength(9,8),1.0f,WALL_LENGTH,gridLength(8,8));
         mWalls = new ArrayList<Wall>();
         mWalls.add(wall1);
         mWalls.add(wall2);
@@ -87,6 +107,20 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         mWalls.add(wall11);
         mWalls.add(wall12);
         mWalls.add(wall13);
+        mWalls.add(wall14);
+        mWalls.add(wall15);
+        mWalls.add(wall16);
+        mWalls.add(wall17);
+        mWalls.add(wall18);
+        mWalls.add(wall19);
+        mWalls.add(wall20);
+        mWalls.add(wall21);
+        mWalls.add(wall22);
+        mWalls.add(wall23);
+        mWalls.add(border1);
+        mWalls.add(border2);
+
+
 
         mConsumedFoods = new ArrayList<Food>();
         mConsumables = new ArrayList<Consumable>();
@@ -452,7 +486,7 @@ public class GLRenderer implements GLSurfaceView.Renderer {
             if ((creatureLeft < wallLeft && creatureLeft > wallRight && Math.abs(creatureLeft - wallRight) > COLLISION_MARGIN_ERROR) || (creatureRight < wallLeft && creatureRight > wallRight && Math.abs(creatureRight - wallLeft) > COLLISION_MARGIN_ERROR) || (creatureLeft > wallLeft && creatureRight < wallRight)) {
                 // the wall and creature collide in the x axis. Lets confirm they also intersect in the y direction
                 if ((creatureTop < wallTop && creatureTop > wallBottom && Math.abs(creatureTop - wallBottom) > COLLISION_MARGIN_ERROR) || (creatureBottom < wallTop && creatureBottom > wallBottom && Math.abs(creatureBottom - wallTop) > COLLISION_MARGIN_ERROR) || (creatureTop > wallTop && creatureBottom < wallBottom)) {
-                    Log.i("COLLISION", "pacman:{"+creatureLeft+","+creatureTop+","+creatureRight+","+creatureBottom+"}, wall: {"+wallLeft+","+wallTop+","+wallRight+","+wallBottom+"}");
+                    //Log.i("COLLISION", "pacman:{"+creatureLeft+","+creatureTop+","+creatureRight+","+creatureBottom+"}, wall: {"+wallLeft+","+wallTop+","+wallRight+","+wallBottom+"}");
                     return true; // Only section where the creature and the wall intersects, both in x and y axis.
                 }
             }
@@ -483,5 +517,12 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 
         return false; // return false if wall and creature does not come in contact
 
+    }
+
+    // methods for calculuating the coordinates on the grid. Used for creating walls
+
+    //  gridLength takes in the number of pacman lengths and wall lengths and gives you the length of result
+    private float gridLength(int pac, int wall) {
+        return 2 * pac * PACMAN_RADIUS + wall * WALL_LENGTH;
     }
 }
