@@ -90,7 +90,31 @@ public class MainActivity extends Activity {
         debugWindow.setId(R.id.debugWindow);
         debugWindow.setText("FPS: --");
         debugWindow.setTextColor(Color.WHITE);
-        debugWindow.setTextSize(20.0f);
+        debugWindow.setTextSize(14.0f);
+
+        TextView debugWindow2 = new TextView(this);
+        debugWindow2.setId(R.id.debugWindow2);
+        debugWindow2.setText("STATUS: --");
+        debugWindow2.setTextColor(Color.WHITE);
+        debugWindow2.setTextSize(14.0f);
+
+        TextView debugWindow3 = new TextView(this);
+        debugWindow3.setId(R.id.debugWindow3);
+        debugWindow3.setText("NODES: --");
+        debugWindow3.setTextColor(Color.WHITE);
+        debugWindow3.setTextSize(14.0f);
+
+        TextView debugWindow4 = new TextView(this);
+        debugWindow4.setId(R.id.debugWindow4);
+        debugWindow4.setText("SCORE: 300");
+        debugWindow4.setTextColor(Color.WHITE);
+        debugWindow4.setTextSize(14.0f);
+
+        TextView debugWindow5 = new TextView(this);
+        debugWindow5.setId(R.id.debugWindow5);
+        debugWindow5.setText("MOVES: {}");
+        debugWindow5.setTextColor(Color.WHITE);
+        debugWindow5.setTextSize(14.0f);
 
         RelativeLayout.LayoutParams debugLayout = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
@@ -98,16 +122,51 @@ public class MainActivity extends Activity {
         debugWindow.setLayoutParams(debugLayout);
         consoleLayout.addView(debugWindow);
 
+        RelativeLayout.LayoutParams statusLayout = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT);
+        statusLayout.addRule(RelativeLayout.BELOW, R.id.debugWindow);
+        debugWindow2.setLayoutParams(statusLayout);
+        consoleLayout.addView(debugWindow2);
+
+        RelativeLayout.LayoutParams nodeLayout = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT);
+        nodeLayout.addRule(RelativeLayout.BELOW, R.id.debugWindow2);
+        debugWindow3.setLayoutParams(nodeLayout);
+        consoleLayout.addView(debugWindow3);
+
         RelativeLayout.LayoutParams controllerViewParams = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.MATCH_PARENT);
+
+        RelativeLayout.LayoutParams scoreLayout = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT);
+        nodeLayout.addRule(RelativeLayout.BELOW, R.id.debugWindow3);
+        debugWindow4.setLayoutParams(scoreLayout);
+        consoleLayout.addView(debugWindow4);
+
+        RelativeLayout.LayoutParams movesLayout = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT);
+        movesLayout.addRule(RelativeLayout.BELOW, R.id.debugWindow4);
+        debugWindow5.setLayoutParams(movesLayout);
+        consoleLayout.addView(debugWindow5);
 
         View controllerView = getLayoutInflater().inflate(R.layout.controller , null);
         controllerView.setLayoutParams(controllerViewParams);
         controllerFrameLayout.addView(controllerView);
 
 
-        mGLView.init(debugWindow, this);
+        // Temporary disable debug windows
+        debugWindow.setVisibility(View.GONE);
+        debugWindow2.setVisibility(View.GONE);
+        debugWindow3.setVisibility(View.GONE);
+        debugWindow4.setVisibility(View.GONE);
+
+
+        mGLView.init(debugWindow, debugWindow2, debugWindow3, debugWindow4, debugWindow5, this);
 
         // Setting up button logic
         final Button upButton = (Button) findViewById(R.id.cntr_up_btn);

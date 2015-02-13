@@ -7,6 +7,7 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Stack;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -28,6 +29,8 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     private static final int UP_MOVE = 1;
     private static final int RIGHT_MOVE = 2;
     private static final int DOWN_MOVE = 3;
+    private static final int INDEX_X = 0;
+    private static final int INDEX_Y = 1;
 
 
     private Pacman mPacman;
@@ -333,24 +336,24 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         float monsterRight = monsterLeft - 2 * monster.getWidth();
         float monsterBottom = monsterTop - 2 * monster.getHeight();
 
-        if (monsterLeft + VELOCITY_MAX <= 1.0f && !collisionDetection(mPacman,Frame.SHIFT_LEFT)) {
+        if (monsterLeft + VELOCITY_MAX <= 1.0f && !collisionDetectionNoFood(mPacman,Frame.SHIFT_LEFT)) {
             // left move is available
             availableMoves.add(LEFT_MOVE);
         }
 
-        if (monsterTop + VELOCITY_MAX <= 1.0f && !collisionDetection(mPacman,Frame.SHIFT_UP)) {
+        if (monsterTop + VELOCITY_MAX <= 1.0f && !collisionDetectionNoFood(mPacman,Frame.SHIFT_UP)) {
             // up move is available
             availableMoves.add(UP_MOVE);
 
         }
 
-        if (monsterRight - VELOCITY_MAX >= -1.0f && !collisionDetection(mPacman,Frame.SHIFT_RIGHT)) {
+        if (monsterRight - VELOCITY_MAX >= -1.0f && !collisionDetectionNoFood(mPacman,Frame.SHIFT_RIGHT)) {
             // right move is available
             availableMoves.add(RIGHT_MOVE);
 
         }
 
-        if (monsterBottom - VELOCITY_MAX >= -1.0f && !collisionDetection(mPacman,Frame.SHIFT_DOWN)) {
+        if (monsterBottom - VELOCITY_MAX >= -1.0f && !collisionDetectionNoFood(mPacman,Frame.SHIFT_DOWN)) {
             // down move is available
             availableMoves.add(DOWN_MOVE);
         }
@@ -519,10 +522,133 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 
     }
 
+    // Checks for collision only. Does not remove food if it is in the way. Used for getAvailableMoves
+    public boolean collisionDetectionNoFood(Pacman creature, int direction) {
+        Frame newFrame = creature.getFrame().getShiftedFrame(direction, VELOCITY_MAX);
+        float creatureLeft = newFrame.getOriginX();
+        float creatureTop = newFrame.getOriginY();
+        float creatureRadius = creature.getRadius();
+        float creatureBottom = creatureTop - 2 * creatureRadius;
+        float creatureRight = creatureLeft - 2 * creatureRadius;
+
+        // Check if pacman collides with any wall
+        Iterator<Wall> wallIter = mWalls.iterator();
+        while (wallIter.hasNext()) {
+            Wall curWall = wallIter.next();
+            float wallLeft = curWall.getOriginX();
+            float wallTop = curWall.getOriginY();
+            float wallHeight = curWall.getHeight();
+            float wallWidth = curWall.getWidth();
+            float wallRight = wallLeft - wallWidth;
+            float wallBottom = wallTop - wallHeight;
+
+            if ((creatureLeft < wallLeft && creatureLeft > wallRight && Math.abs(creatureLeft - wallRight) > COLLISION_MARGIN_ERROR) || (creatureRight < wallLeft && creatureRight > wallRight && Math.abs(creatureRight - wallLeft) > COLLISION_MARGIN_ERROR) || (creatureLeft > wallLeft && creatureRight < wallRight)) {
+                // the wall and creature collide in the x axis. Lets confirm they also intersect in the y direction
+                if ((creatureTop < wallTop && creatureTop > wallBottom && Math.abs(creatureTop - wallBottom) > COLLISION_MARGIN_ERROR) || (creatureBottom < wallTop && creatureBottom > wallBottom && Math.abs(creatureBottom - wallTop) > COLLISION_MARGIN_ERROR) || (creatureTop > wallTop && creatureBottom < wallBottom)) {
+                    //Log.i("COLLISION", "pacman:{"+creatureLeft+","+creatureTop+","+creatureRight+","+creatureBottom+"}, wall: {"+wallLeft+","+wallTop+","+wallRight+","+wallBottom+"}");
+                    return true; // Only section where the creature and the wall intersects, both in x and y axis.
+                }
+            }
+        }
+        return false;
+    }
+
     // methods for calculuating the coordinates on the grid. Used for creating walls
 
     //  gridLength takes in the number of pacman lengths and wall lengths and gives you the length of result
     private float gridLength(int pac, int wall) {
         return 2 * pac * PACMAN_RADIUS + wall * WALL_LENGTH;
+    }
+
+    public Pacman getPacman() {
+        return mPacman;
+    }
+
+    public ArrayList<String> getAvailableMovesString(Pacman monster) {
+        ArrayList<Integer> arr = getAvailableMoves(monster);
+        ArrayList<String> results = new ArrayList();
+        for (int i = 0; i < arr.size(); i++) {
+            Integer curMove = arr.get(i);
+            switch(curMove) {
+                case 0:
+                    results.add("Left");
+                    break;
+                case 1:
+                    results.add("Up");
+                    break;
+                case 2:
+                    results.add("Right");
+                    break;
+                case 3:
+                    results.add("Down");
+                    break;
+            }
+        }
+
+        return results;
+    }
+
+    public boolean isGoal() {
+        float pacX = mPacman.getFrame().getOriginX();
+        float pacY = mPacman.getFrame().getOriginY();
+        float goalX = 1.0f;// - gridLength(8,8);
+        float goalY = 1.0f;// - gridLength(8,8);
+
+        if (goalX == pacX && goalY == pacY) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private int getNeighborDictIndex(int curX, int curY, int move, int returnIndex) { // return index is whether you want the x index or y index for the dictionary
+        int resultX = curX;
+        int resultY = curY;
+        switch (move) {
+            case 0:
+                resultX -= 1;
+                break;
+            case 1:
+                resultY -= 1;
+                break;
+            case 2:
+                resultX += 1;
+                break;
+            case 3:
+                resultY += 1;
+                break;
+        }
+
+        if (returnIndex == 0) {
+            return resultX;
+        }
+
+        return resultY;
+    }
+
+    public ArrayList<Integer> simulateDFS() {
+        ArrayList<Integer> movesList = new ArrayList<Integer>();
+        Stack<Integer> stackX = new Stack<Integer>();
+        Stack<Integer> stackY = new Stack<Integer>();
+        boolean[][] dictionary = new boolean[140][140]; // dictionary is used to keep track of unique paths. Repeating paths will not show up as valid move
+        for (int i = 0; i < 140; i++) {
+            for (int j = 0; j < 140; j++) {
+                dictionary[i][j] = false; // initialize whole dictioanry to false
+            }
+        }
+
+        dictionary[0][0] = true; // top left corner is currently occupied
+        // get initial set of neighboring possible moves
+        ArrayList<Integer> initMoveset = getAvailableMoves(mPacman);
+        for(int i = 0; i < initMoveset.size(); i++) {
+            int curAvailMove = initMoveset.get(i);
+            stackX.push(getNeighborDictIndex(0,0,curAvailMove,INDEX_X));
+            stackY.push(getNeighborDictIndex(0,0,curAvailMove,INDEX_Y));
+        }
+
+        while (!isGoal() && stackX.size() > 0) { // Loop until we find the goal
+
+
+        }
     }
 }

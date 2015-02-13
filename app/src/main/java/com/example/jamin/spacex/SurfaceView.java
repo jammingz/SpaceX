@@ -8,6 +8,8 @@ import android.view.MotionEvent;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 import static java.lang.Math.round;
 
 /**
@@ -27,6 +29,10 @@ public class SurfaceView extends GLSurfaceView {
     int currentFPS;
 
     private TextView debugWindow;
+    private TextView statusWindow;
+    private TextView nodeWindow;
+    private TextView movesWindow;
+    private String movesString;
     private Activity mActivity;
     private Long currentTime;
     private Long dt;
@@ -56,9 +62,12 @@ public class SurfaceView extends GLSurfaceView {
     private float mPreviousY;
 
 
-    public void init(TextView view, Activity activity) {
-        debugWindow = view;
+    public void init(TextView fps, TextView status, TextView node, TextView score, TextView moves, Activity activity) {
+        statusWindow = status;
+        nodeWindow = node;
+        debugWindow = fps;
         mActivity = activity;
+        movesWindow = moves;
     }
 
     public void start() {
@@ -94,14 +103,41 @@ public class SurfaceView extends GLSurfaceView {
         return true;
     }
 
-    public void updateDebug(String text) {
-        debugWindow.setText(text);
+    public void updateDebug(TextView view,String text) {
+        view.setText(text);
     }
 
     private class UpdateAnimationTask extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... params) {
+            // initialize search
+            final int numOfNodes = 0;
+            mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    updateDebug(statusWindow, "STATUS: Searching...");
+                }
+            });
 
+            // Search algorithm applied here
+
+
+            mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    updateDebug(statusWindow, "STATUS: Search Complete.");
+                }
+            });
+
+            mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    updateDebug(nodeWindow, "NODES: " + String.valueOf(numOfNodes));
+                }
+            });
+
+
+            // Begin Game Loop
             long cumulativeDt = 0;
             fps = 0;
             while (isPacmanAnimating) {
@@ -137,7 +173,7 @@ public class SurfaceView extends GLSurfaceView {
                             //updateDebug("FPSs: " + Long.toString(( mFPS/(1+currentTime - mStartTime))));
                             //updateDebug("FPS: " + Long.toString(curFPS));
                             //updateDebug("FPS: " + Long.toString(curFPS));
-                            updateDebug("FPS: " + Long.toString(mFPS));
+                            updateDebug(debugWindow, "FPS: " + Long.toString(mFPS));
                             //stuff that updates ui
                         }
                     });
@@ -155,6 +191,37 @@ public class SurfaceView extends GLSurfaceView {
                     }
                 }
                 requestRender();
+
+
+                ArrayList<String> pacmanMoves = mRenderer.getAvailableMovesString(mRenderer.getPacman());
+                // Now we format the moves into a string
+
+                movesString = "{";
+                if (pacmanMoves.size() > 0) {
+                    movesString += pacmanMoves.get(0);
+                }
+
+                for (int i = 1; i < pacmanMoves.size(); i++) {
+                    movesString += ", " + pacmanMoves.get(i);
+                }
+
+                movesString += "}";
+
+                mActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateDebug(movesWindow, "Moves: " + movesString);
+                    }
+                });
+
+                if (mRenderer.isGoal()) {
+                    mActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateDebug(movesWindow, "GOAL");
+                        }
+                    });
+                }
 
 
             }
