@@ -18,7 +18,7 @@ import static java.lang.Math.round;
 public class SurfaceView extends GLSurfaceView {
     private final GLRenderer mRenderer;
     private static Context aContext=null;
-    private boolean isPacmanAnimating = false;
+    static protected boolean isPacmanAnimating = false;
 
     private long mLastTime;
     private long mStartTime;
@@ -37,6 +37,7 @@ public class SurfaceView extends GLSurfaceView {
     private Long currentTime;
     private Long dt;
 
+    private boolean temp;
 
     public SurfaceView(Context context) {
         super(context);
@@ -53,6 +54,7 @@ public class SurfaceView extends GLSurfaceView {
 
         mFPS = 0;
         needsUpdate = false;
+        temp = false;
 
     }
 
@@ -99,6 +101,7 @@ public class SurfaceView extends GLSurfaceView {
                     stop();
                     Toast.makeText(aContext, "Stop Animation", Toast.LENGTH_SHORT).show();
                 }
+
         }
         return true;
     }
@@ -112,6 +115,8 @@ public class SurfaceView extends GLSurfaceView {
         protected Void doInBackground(Void... params) {
             // initialize search
             final int numOfNodes = 0;
+            ArrayList<Integer> solution = new ArrayList<Integer>();
+
             mActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -120,7 +125,7 @@ public class SurfaceView extends GLSurfaceView {
             });
 
             // Search algorithm applied here
-
+            solution = mRenderer.simulateDFS();
 
             mActivity.runOnUiThread(new Runnable() {
                 @Override
@@ -140,7 +145,13 @@ public class SurfaceView extends GLSurfaceView {
             // Begin Game Loop
             long cumulativeDt = 0;
             fps = 0;
-            while (isPacmanAnimating) {
+
+            solution.add(0,solution.get(0));
+            int solutionIndex = 0;
+            int solutionEnd = solution.size();
+            while (isPacmanAnimating && solutionIndex < solutionEnd) {
+                int curSolutionMove = solution.get(solutionIndex);
+                solutionIndex++;
                 mFPS++;
                 currentTime = System.currentTimeMillis();
                 dt = currentTime - mLastTime;
@@ -190,10 +201,13 @@ public class SurfaceView extends GLSurfaceView {
                         e.printStackTrace();
                     }
                 }
+                rotatePacman(curSolutionMove);
                 requestRender();
 
 
-                ArrayList<String> pacmanMoves = mRenderer.getAvailableMovesString(mRenderer.getPacman());
+
+
+                ArrayList<String> pacmanMoves = mRenderer.getGameBoard().getAvailableMovesString(mRenderer.getGameBoard().getPacman());
                 // Now we format the moves into a string
 
                 movesString = "{";
@@ -214,7 +228,7 @@ public class SurfaceView extends GLSurfaceView {
                     }
                 });
 
-                if (mRenderer.isGoal()) {
+                if (mRenderer.getGameBoard().isGoal()) {
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -234,7 +248,7 @@ public class SurfaceView extends GLSurfaceView {
 
     // Methods for rotating Pacman
     public void rotatePacman(int direction) {
-        mRenderer.rotatePacman(direction);
+        mRenderer.getGameBoard().rotatePacman(direction);
     }
 
 }

@@ -240,13 +240,8 @@ public class Pacman extends Monster {
         return mFrame;
     }
 
-    // IMPLEMENT LATER!
-    public void setDirection(int value) {
-       // DO SOMETHING LATER
-    }
-
-    public int getDirection() {
-        return 0;
+    public void setFrame(Frame frame) {
+        mFrame = frame;
     }
 
 
@@ -302,5 +297,12 @@ public class Pacman extends Monster {
         if (result < 0)
             result += y;
         return result;
+    }
+
+
+    public Pacman clone() {
+        Pacman clone = new Pacman(maxVertex,radius,color[0],color[1],color[2],color[3]);
+        clone.setFrame(mFrame.clone()); // We clone a frame for the NEW pacman
+        return clone;
     }
 }

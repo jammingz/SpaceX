@@ -4,10 +4,14 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Stack;
+import java.util.logging.LoggingMXBean;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -17,26 +21,8 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class GLRenderer implements GLSurfaceView.Renderer {
     private static final String TAG = "GLRenderer";
-    private static final float VELOCITY_MAX = 0.01333333f; //140 x 140 movement //0.015f; // 120 x 120 movements for pacman
-    private static final float COLLISION_MARGIN_ERROR = 0.00001f;
-    private static final float PACMAN_RADIUS = 0.066667f; // this radius gives us 15 pacman lengths across screen
-    private static final float WALL_LENGTH = 3 * VELOCITY_MAX;
-
-    private float PACMAN_OFFSET_X;
-    private float PACMAN_OFFSET_Y;
-
-    private static final int LEFT_MOVE = 0;
-    private static final int UP_MOVE = 1;
-    private static final int RIGHT_MOVE = 2;
-    private static final int DOWN_MOVE = 3;
-    private static final int INDEX_X = 0;
-    private static final int INDEX_Y = 1;
-
-
-    private Pacman mPacman;
-    private ArrayList<Wall> mWalls;
-    private ArrayList<Consumable> mConsumables;
-    private ArrayList<Food> mConsumedFoods;
+    private static final int VISIT_INDEX_X = 0;
+    private static final int VISIT_INDEX_Y = 1;
 
     // mMVPMatrix is an abbreviation for "Model View Projection Matrix"
     private final float[] mMVPMatrix = new float[16];
@@ -44,105 +30,24 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     private final float[] mViewMatrix = new float[16];
     private final float[] mRotationMatrix = new float[16];
 
-    private float mAngle;
-    private int mPacmanSide; // {0: Pacman is showing right side of race, 1: Pacman is showing left side of face. Orthogonal to the screen and is facing the user}
-    private static final float ANGLE_OFFSET = 0;
     private boolean mFirstDraw;
+    private GameBoard mGameBoard;
 
-
+    private Stack<GameBoard> tempGameBoardStack;
+    private GameBoard tempNode;
+    private boolean[][] tempVisited;
 
     public GLRenderer() {
 
         mFirstDraw = true;
-        PACMAN_OFFSET_X = 1.0f;
-        PACMAN_OFFSET_Y = 1.0f;
     }
 
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
-
         // Set the background frame color
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-        mPacman = new Pacman(150,PACMAN_RADIUS,1.0f,1.0f,0.2f,1.0f);
-        mPacman.setOrigin(PACMAN_OFFSET_X,PACMAN_OFFSET_Y);
-        mAngle = 0; // Initialize angle to 0 degrees.
-        mPacmanSide = 0; // Initialize at seeing right side
-
-        // Creating borders
-        Wall wall1 = new Wall(1 - gridLength(1,0),1 - gridLength(1,0),WALL_LENGTH,gridLength(4, 5));
-        Wall wall2 = new Wall(1 - gridLength(1,1),1 - gridLength(1,0),gridLength(1,1),WALL_LENGTH);
-        Wall wall3 = new Wall(1 - gridLength(2,1),1 - gridLength(1,1),WALL_LENGTH,0.5199f);
-        Wall wall4 = new Wall(1 - gridLength(1,1),1 - gridLength(5,4),gridLength(1,1),WALL_LENGTH);
-        Wall wall5 = new Wall(1 - gridLength(2,1),1 - gridLength(5,5),WALL_LENGTH,gridLength(3,2));
-        Wall wall6 = new Wall(1 - gridLength(1,0),1 - gridLength(6,5),WALL_LENGTH,gridLength(2,2));
-        Wall wall7 = new Wall(1 - gridLength(3,2),1 - gridLength(1,0),gridLength(2,3),WALL_LENGTH);
-        Wall wall8 = new Wall(1 - gridLength(3,3),1 - gridLength(2,1),gridLength(1,1),WALL_LENGTH);
-        Wall wall9 = new Wall(1 - gridLength(5,4),1 - gridLength(2,1),gridLength(1,1),WALL_LENGTH);
-        Wall wall10 = new Wall(1 - gridLength(3,2),1 - gridLength(2,1),WALL_LENGTH,gridLength(2,3));
-        Wall wall11 = new Wall(1 - gridLength(4,3),1 - gridLength(3,2),gridLength(1,2), WALL_LENGTH);
-        Wall wall12 = new Wall(1 - gridLength(3,3),1 - gridLength(4,3),gridLength(2,1), WALL_LENGTH);
-        Wall wall13 = new Wall(1 - gridLength(5,4),1 - gridLength(4,3),WALL_LENGTH,gridLength(1,1));
-        Wall wall14 = new Wall(1 - gridLength(3,2),1 - gridLength(5,4),WALL_LENGTH,gridLength(1,1));
-        Wall wall15 = new Wall(1 - gridLength(3,2),1 - gridLength(6,5),gridLength(4,5),WALL_LENGTH);
-        Wall wall16 = new Wall(1 - gridLength(3,2),1 - gridLength(7,6),gridLength(5,5),WALL_LENGTH);
-        Wall wall17 = new Wall(1 - gridLength(1,0),1 - gridLength(8,7),gridLength(6,7),WALL_LENGTH);
-        Wall wall18 = new Wall(1 - gridLength(6,5),1.0f,WALL_LENGTH,gridLength(6,5));
-        Wall wall19 = new Wall(1 - gridLength(7,6),1 - gridLength(5,4),WALL_LENGTH,gridLength(1,1));
-        Wall wall20 = new Wall(1 - gridLength(7,6),1 - gridLength(1,0),WALL_LENGTH,gridLength(3,3));
-        Wall wall21 = new Wall(1 - gridLength(7,6),1 - gridLength(4,3),gridLength(1,1),WALL_LENGTH);
-        Wall wall22 = new Wall(1 - gridLength(8,7),1.0f,WALL_LENGTH,gridLength(2,2));
-        Wall wall23 = new Wall(1 - gridLength(8,7),1 - gridLength(3,2),WALL_LENGTH,gridLength(6,7));
-
-        Wall border1 = new Wall(1.0f,1 - gridLength(9,8),gridLength(9,9),WALL_LENGTH);
-        Wall border2 = new Wall(1 - gridLength(9,8),1.0f,WALL_LENGTH,gridLength(8,8));
-        mWalls = new ArrayList<Wall>();
-        mWalls.add(wall1);
-        mWalls.add(wall2);
-        mWalls.add(wall3);
-        mWalls.add(wall4);
-        mWalls.add(wall5);
-        mWalls.add(wall6);
-        mWalls.add(wall7);
-        mWalls.add(wall8);
-        mWalls.add(wall9);
-        mWalls.add(wall10);
-        mWalls.add(wall11);
-        mWalls.add(wall12);
-        mWalls.add(wall13);
-        mWalls.add(wall14);
-        mWalls.add(wall15);
-        mWalls.add(wall16);
-        mWalls.add(wall17);
-        mWalls.add(wall18);
-        mWalls.add(wall19);
-        mWalls.add(wall20);
-        mWalls.add(wall21);
-        mWalls.add(wall22);
-        mWalls.add(wall23);
-        mWalls.add(border1);
-        mWalls.add(border2);
-
-
-
-        mConsumedFoods = new ArrayList<Food>();
-        mConsumables = new ArrayList<Consumable>();
-
-
-        for (int i = 1; i < 8; i ++ ) {
-            Consumable c = new Consumable(2 * PACMAN_RADIUS * i,0f);
-            mConsumables.add(c);
-        }
-
-        for (int i = 1; i < 8; i ++ ) {
-            Consumable c = new Consumable(2 * PACMAN_RADIUS * 7, -2 * PACMAN_RADIUS * i);
-            mConsumables.add(c);
-        }
-
-
-        //Consumable c1 = new Consumable(0.4f,0f);
-        //mConsumables.add(c1);
-
+        mGameBoard = new GameBoard();
+        mGameBoard.fillChildren();
     }
 
     @Override
@@ -151,11 +56,13 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         float[] results = new float[16];
         float[] mTranslateM = new float[16];
 
+        Pacman mPacman = mGameBoard.getPacman();
+
         if (mFirstDraw) {
             mFirstDraw = false;
         } else {
-            setTranslation(mPacman);
-            mPacman.nextFrame();
+            mGameBoard.setTranslation(mGameBoard.getPacman(),mGameBoard.getPacmanAngle());
+            mGameBoard.getPacman().nextFrame();
         }
 
 
@@ -178,10 +85,10 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         // long time = SystemClock.uptimeMillis() % 4000L;
         // float angle = 0.090f * ((int) time);
 
-        if (mPacmanSide == 1) {
-            flip(mAngle);
+        if (mGameBoard.getPacmanSide() == 1) {
+            mGameBoard.flip(mRotationMatrix);
         } else {
-            Matrix.setRotateM(mRotationMatrix, 0, mAngle, 0, 0, 1.0f);
+            Matrix.setRotateM(mRotationMatrix, 0, mGameBoard.getPacmanAngle(), 0, 0, 1.0f);
         }
 
         // Combine the rotation matrix with the projection and camera view
@@ -192,10 +99,10 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 
         float pacmanX = mPacman.getOriginX() - mPacman.getRadius();
         float pacmanY = mPacman.getOriginY() - mPacman.getRadius();
-        float projectedTransX = convertTranslationX(pacmanX,pacmanY,mAngle,mPacmanSide);
-        float projectedTransY = convertTranslationY(pacmanX,pacmanY,mAngle,mPacmanSide);
+        float projectedTransX = mGameBoard.convertTranslationX(pacmanX, pacmanY, mGameBoard.getPacmanAngle(), mGameBoard.getPacmanSide());
+        float projectedTransY = mGameBoard.convertTranslationY(pacmanX, pacmanY, mGameBoard.getPacmanAngle(), mGameBoard.getPacmanSide());
 
-        Matrix.translateM(results,0,projectedTransX,projectedTransY,0);
+        Matrix.translateM(results, 0, projectedTransX, projectedTransY, 0);
         //Matrix.multiplyMM(results,0,results,0,mTranslateM,0);
 
         //Matrix.translateM(results, 0, scratch, 0, 1.33f, mTranslationY, 0);
@@ -212,22 +119,15 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         // iterate mouth shape if this is not the first drawing of pacman
 
 
-        mPacman.draw(results);
-        mAngle = mAngle % 360;
+        //mPacman.draw(results);
+        mGameBoard.drawPacman(results);
+        mGameBoard.setPacmanAngle( mGameBoard.getPacmanAngle() % 360);
 
         // Draw all the walls
-        Iterator<Wall> wallIter = mWalls.iterator();
-        while (wallIter.hasNext()) {
-            Wall curWall = wallIter.next();
-            curWall.draw(mMVPMatrix);
-        }
+        mGameBoard.drawWall(mMVPMatrix);
 
         // Draw all the consumables
-        Iterator<Consumable> consumableIter = mConsumables.iterator();
-        while (consumableIter.hasNext()) {
-            Consumable curConsumable = consumableIter.next();
-            curConsumable.draw(mMVPMatrix);
-        }
+        mGameBoard.drawConsumables(mMVPMatrix);
 
     }
 
@@ -246,15 +146,15 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 
     /**
      * Utility method for compiling a OpenGL shader.
-     *
+     * <p/>
      * <p><strong>Note:</strong> When developing shaders, use the checkGlError()
      * method to debug shader coding errors.</p>
      *
-     * @param type - Vertex or fragment shader type.
+     * @param type       - Vertex or fragment shader type.
      * @param shaderCode - String containing the shader code.
      * @return - Returns an id for the shader.
      */
-    public static int loadShader(int type, String shaderCode){
+    public static int loadShader(int type, String shaderCode) {
 
         // create a vertex shader type (GLES20.GL_VERTEX_SHADER)
         // or a fragment shader type (GLES20.GL_FRAGMENT_SHADER)
@@ -270,7 +170,7 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     /**
      * Utility method for debugging OpenGL calls. Provide the name of the call
      * just after making it:
-     *
+     * <p/>
      * <pre>
      * mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
      * MyGLRenderer.checkGlError("glGetUniformLocation");</pre>
@@ -287,321 +187,99 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         }
     }
 
-    /**
-     * Returns the rotation angle of the triangle shape (mTriangle).
-     *
-     * @return - A float representing the rotation angle.
-     */
-    public float getAngle() {
-        return mAngle;
+    public GameBoard getGameBoard() {
+        return mGameBoard;
     }
 
-    public void setTranslation(Pacman creature) {
-        float creatureLeft = creature.getOriginX();
-        float creatureTop = creature.getOriginY();
-        float creatureRight = creatureLeft - 2 * creature.getRadius();
-        float createBottom = creatureTop - 2 * creature.getRadius();
-
-        switch ((int) mAngle) {
-            case 0: // Facing left
-                if (creatureLeft + VELOCITY_MAX <= 1.0f && !collisionDetection(mPacman,Frame.SHIFT_LEFT)) {
-                    creature.setOrigin(creatureLeft + VELOCITY_MAX,creature.getOriginY()); // move left only if we haven't hit boundary
-                }
-                break;
-
-            case 90: // facing up
-                if (creatureTop + VELOCITY_MAX <= 1.0f && !collisionDetection(mPacman,Frame.SHIFT_UP)) {
-                    creature.setOrigin(creature.getOriginX(),creature.getOriginY() + VELOCITY_MAX); // move up only if we haven't hit boundary
-                }
-                break;
-
-            case 180: // facing right
-                if (creatureRight - VELOCITY_MAX >= -1.0f && !collisionDetection(mPacman,Frame.SHIFT_RIGHT)) {
-                    creature.setOrigin(creatureLeft - VELOCITY_MAX,creature.getOriginY()); // move right only if we haven't hit boundary
-                }
-                break;
-
-            case 270: // facing down
-                if (createBottom - VELOCITY_MAX >= -1.0f && !collisionDetection(mPacman,Frame.SHIFT_DOWN)) {
-                creature.setOrigin(creature.getOriginX(),creature.getOriginY() - VELOCITY_MAX); // move down only if we haven't hit boundary
-                }
-                break;
-        }
-    }
-
-    public ArrayList<Integer> getAvailableMoves(Pacman monster) {
-        ArrayList<Integer> availableMoves = new ArrayList<Integer>();
-        float monsterLeft = monster.getOriginX();
-        float monsterTop = monster.getOriginY();
-        float monsterRight = monsterLeft - 2 * monster.getWidth();
-        float monsterBottom = monsterTop - 2 * monster.getHeight();
-
-        if (monsterLeft + VELOCITY_MAX <= 1.0f && !collisionDetectionNoFood(mPacman,Frame.SHIFT_LEFT)) {
-            // left move is available
-            availableMoves.add(LEFT_MOVE);
-        }
-
-        if (monsterTop + VELOCITY_MAX <= 1.0f && !collisionDetectionNoFood(mPacman,Frame.SHIFT_UP)) {
-            // up move is available
-            availableMoves.add(UP_MOVE);
-
-        }
-
-        if (monsterRight - VELOCITY_MAX >= -1.0f && !collisionDetectionNoFood(mPacman,Frame.SHIFT_RIGHT)) {
-            // right move is available
-            availableMoves.add(RIGHT_MOVE);
-
-        }
-
-        if (monsterBottom - VELOCITY_MAX >= -1.0f && !collisionDetectionNoFood(mPacman,Frame.SHIFT_DOWN)) {
-            // down move is available
-            availableMoves.add(DOWN_MOVE);
-        }
-
-        return availableMoves;
-        }
-
-    /**
-     * Sets the rotation angle of the triangle shape (mPacman).
-     */
-    public void setAngle(float angle) {
-        mAngle = angle;
-    }
-
-    public void rotateCW() {
-        mAngle = PacMath.modulus((int) mAngle + 90,360); // Add 90 mod(360) to current angle
-    }
-
-    public void rotateCCW() {
-        mAngle = PacMath.modulus((int) mAngle - 90,360); // Add 90 mod(360) to current angle
-    }
-
-    public void flip(float angle) {
-        float[] z_rotate = new float[16];
-        float[] y_rotate = new float[16];
-        float zAngle = (angle + 180 - 2 * ANGLE_OFFSET) % 360; // after flip, rotate 180 degrees to get correct direction
-        Matrix.setRotateM(z_rotate, 0, zAngle, 0,0,1.0f);
-        Matrix.setRotateM(y_rotate,0,180,0,1.0f,0);
-
-        Matrix.multiplyMM(mRotationMatrix,0,z_rotate,0,y_rotate,0);
-    }
-
-    public void rotatePacman(int direction) {
-        switch (direction) {
-            case Pacman.FACE_LEFT:
-                mAngle = 0;
-                if (mPacmanSide == 1) {
-                    mPacmanSide = 0;
-                }
-                break;
-            case Pacman.FACE_DOWN:
-                mAngle = 270;
-                break;
-            case Pacman.FACE_RIGHT:
-                if (mPacmanSide == 0) {
-                    mPacmanSide = 1;
-                }
-                mAngle = 180;
-                break;
-            case Pacman.FACE_UP:
-                mAngle = 90;
-                break;
-        }
-        mAngle += ANGLE_OFFSET;
-    }
-
-
-    public float convertTranslationX(float dx, float dy, float angle, int side) {
-        if (side == 0) { // Original face
-            switch ((int) angle) {
-                case 90:
-                    return dy;
-                case 0:
-                    return dx;
-                case 270:
-                    return -1 * dy;
+    public ArrayList<Integer> simulateDFS() {
+        ArrayList<Integer> solution = new ArrayList<Integer>();
+        Stack<GameBoard> gameBoardStack = new Stack<GameBoard>();
+        GameBoard curNode = mGameBoard;
+        boolean[][] visited = new boolean[141][141]; // dictionary is used to keep track of unique paths. Repeating paths will not show up as valid move
+        for (int i = 0; i < 141; i++) {
+            for (int j = 0; j < 141; j++) {
+                visited[i][j] = false; // initialize whole dictioanry to false
             }
+        }
+
+        visited[0][0] = true; // top left corner is currently occupied
+        // get initial set of neighboring possible moves
+        // ArrayList<Integer> initMoveset = board.getAvailableMoves(board.getPacman());
+
+        curNode.fillChildren();
+        ArrayList<GameBoard> children = curNode.getChildren();
+
+        Log.i("Checkpoint","1");
+
+        for(int i = 0; i < children.size(); i++) {
+            GameBoard child = children.get(i);
+            gameBoardStack.push(child);
+        }
+
+
+        Log.i("Checkpoint","2");
+
+        while (!curNode.isGoal() && gameBoardStack.size() > 0 && SurfaceView.isPacmanAnimating) { // Loop until we find the goal
+            curNode = gameBoardStack.pop();
+
+            // We flag visited dictionary to show we have visited current node
+            int nodeVisitX = getDictionaryIndex(curNode, VISIT_INDEX_X);
+            int nodeVisitY = getDictionaryIndex(curNode, VISIT_INDEX_Y);
+            visited[nodeVisitX][nodeVisitY] = true;
+
+            curNode.fillChildren();
+            children = curNode.getChildren();
+
+            for(int i = 0; i < children.size(); i++) {
+                GameBoard child = children.get(i);
+                // we only push child into stack if we havent visited it yet. we check dictionary to see if child node has been visited
+                int childVisitX = getDictionaryIndex(child, VISIT_INDEX_X);
+                int childVisitY = getDictionaryIndex(child, VISIT_INDEX_Y);
+                Log.i("Checkpoint","Visiting (" + String.valueOf(nodeVisitX) + "," + String.valueOf(nodeVisitY) + ") Stack: " + gameBoardStack.size());
+                if (!visited[childVisitX][childVisitY]) {
+                    // if we havent already visited the current node, we push child into stack
+                    gameBoardStack.push(child);
+                }
+
+            }
+
+            // if node has no child and we're not at goal, we backtrack
+            if (!curNode.isGoal() && children.size() == 0) {
+                // we need to "unvisit" the current node
+                visited[nodeVisitX][nodeVisitY] = false;
+                Log.i("Checkpoint","Un-Visiting (" + String.valueOf(nodeVisitX) + "," + String.valueOf(nodeVisitY) + ") Stack: " + gameBoardStack.size());
+
+            }
+
+        }
+
+        Log.i("DFS", "Done");
+
+        // Time to traverse up the goal node up to parent.
+        while (curNode.getParent() != null) {
+            solution.add(curNode.getMoveFromParent());
+            curNode = curNode.getParent();
+        }
+        // Since the order of the solution is backwards from the goal to beginning, we need to reverse the solution list.
+        Collections.reverse(solution);
+        return solution;
+    }
+
+    private int getDictionaryIndex(GameBoard board, int returnIndex) {  // return index is whether you want the x index or y index for the dictionary
+        // first we find x and y coordinates of pacman
+        float pacX = board.getPacman().getFrame().getOriginX();
+        float pacY = board.getPacman().getFrame().getOriginY();
+
+        if (returnIndex == 0) {
+            int result = Math.round((1 - pacX) / GameBoard.VELOCITY_MAX);
+            return result;
         } else {
-            switch ((int) angle) {
-                case 90:
-                    return dy;
-                case 180:
-                    return -1 * dx;
-                case 270:
-                    return -1 * dy;
-            }
-
+            int result = Math.round((1 - pacY) / GameBoard.VELOCITY_MAX);
+            return result;
         }
-        return 0;
     }
 
-    public float convertTranslationY(float dx, float dy, float angle, int side) {
-        if (side == 0) {
-            switch ((int) angle) {
-                case 90:
-                    return -1 * dx;
-                case 0:
-                    return dy;
-                case 270:
-                    return dx;
-            }
-        } else {
-            switch ((int) angle) {
-                case 90:
-                    return dx;
-                case 0:
-                    return dy;
-                case 270:
-                    return -1 * dx;
-            }
-        }
-
-        return dy;
-    }
-
-
-    public void startAnimation() {
-        mPacman.startAnimation();
-    }
-
-    public void stopAnimation() { mPacman.stopAnimation();}
-
-    // ** REMINDER** This takes in the predict path frame and NOT THE ACTUAL monster frame.
-    public boolean collisionDetection(Pacman creature, int direction) {
-        Frame newFrame = creature.getFrame().getShiftedFrame(direction,VELOCITY_MAX);
-        float creatureLeft = newFrame.getOriginX();
-        float creatureTop = newFrame.getOriginY();
-        float creatureRadius = creature.getRadius();
-        float creatureBottom = creatureTop - 2 * creatureRadius;
-        float creatureRight = creatureLeft - 2 * creatureRadius;
-
-        // Check if pacman collides with any wall
-        Iterator<Wall> wallIter = mWalls.iterator();
-        while (wallIter.hasNext()) {
-            Wall curWall = wallIter.next();
-            float wallLeft = curWall.getOriginX();
-            float wallTop = curWall.getOriginY();
-            float wallHeight = curWall.getHeight();
-            float wallWidth = curWall.getWidth();
-            float wallRight = wallLeft - wallWidth;
-            float wallBottom = wallTop - wallHeight;
-
-            if ((creatureLeft < wallLeft && creatureLeft > wallRight && Math.abs(creatureLeft - wallRight) > COLLISION_MARGIN_ERROR) || (creatureRight < wallLeft && creatureRight > wallRight && Math.abs(creatureRight - wallLeft) > COLLISION_MARGIN_ERROR) || (creatureLeft > wallLeft && creatureRight < wallRight)) {
-                // the wall and creature collide in the x axis. Lets confirm they also intersect in the y direction
-                if ((creatureTop < wallTop && creatureTop > wallBottom && Math.abs(creatureTop - wallBottom) > COLLISION_MARGIN_ERROR) || (creatureBottom < wallTop && creatureBottom > wallBottom && Math.abs(creatureBottom - wallTop) > COLLISION_MARGIN_ERROR) || (creatureTop > wallTop && creatureBottom < wallBottom)) {
-                    //Log.i("COLLISION", "pacman:{"+creatureLeft+","+creatureTop+","+creatureRight+","+creatureBottom+"}, wall: {"+wallLeft+","+wallTop+","+wallRight+","+wallBottom+"}");
-                    return true; // Only section where the creature and the wall intersects, both in x and y axis.
-                }
-            }
-        }
-
-        // Checks if pacman collides with any food object
-        Iterator<Consumable> foodIter = mConsumables.iterator();
-        while (foodIter.hasNext()) {
-            Consumable curFood = foodIter.next();
-            float foodLeft = curFood.getOriginX();
-            float foodTop = curFood.getOriginY();
-            float foodLength = curFood.getHeight();
-            float foodRight = foodLeft - foodLength;
-            float foodBottom = foodTop - foodLength;
-
-            //if ((creatureLeft < wallLeft && creatureLeft > wallRight) || (creatureRight < wallLeft && creatureRight > wallRight)) {
-            if ((creatureLeft < foodLeft && creatureLeft > foodRight && Math.abs(creatureLeft - foodRight) > COLLISION_MARGIN_ERROR) || (creatureRight < foodLeft && creatureRight > foodRight && Math.abs(creatureRight - foodLeft) > COLLISION_MARGIN_ERROR) || (creatureLeft > foodLeft && creatureRight < foodRight)) {
-                // the wall and creature collide in the x axis. Lets confirm they also intersect in the y direction
-                //if ((creatureTop < wallTop) && (creatureTop > wallBottom) || ((creatureBottom < wallTop) && (creatureBottom > wallBottom))) {
-                if ((creatureTop < foodTop && creatureTop > foodBottom && Math.abs(creatureTop - foodBottom) > COLLISION_MARGIN_ERROR) || (creatureBottom < foodTop && creatureBottom > foodBottom && Math.abs(creatureBottom - foodTop) > COLLISION_MARGIN_ERROR) || (creatureTop > foodTop && creatureBottom < foodBottom)) {
-                    // pacman has obtained food item. We move food item into list of consumed foods
-                    mConsumedFoods.add(curFood);
-                    mConsumables.remove(curFood);
-                    break;
-                }
-            }
-        }
-
-        return false; // return false if wall and creature does not come in contact
-
-    }
-
-    // Checks for collision only. Does not remove food if it is in the way. Used for getAvailableMoves
-    public boolean collisionDetectionNoFood(Pacman creature, int direction) {
-        Frame newFrame = creature.getFrame().getShiftedFrame(direction, VELOCITY_MAX);
-        float creatureLeft = newFrame.getOriginX();
-        float creatureTop = newFrame.getOriginY();
-        float creatureRadius = creature.getRadius();
-        float creatureBottom = creatureTop - 2 * creatureRadius;
-        float creatureRight = creatureLeft - 2 * creatureRadius;
-
-        // Check if pacman collides with any wall
-        Iterator<Wall> wallIter = mWalls.iterator();
-        while (wallIter.hasNext()) {
-            Wall curWall = wallIter.next();
-            float wallLeft = curWall.getOriginX();
-            float wallTop = curWall.getOriginY();
-            float wallHeight = curWall.getHeight();
-            float wallWidth = curWall.getWidth();
-            float wallRight = wallLeft - wallWidth;
-            float wallBottom = wallTop - wallHeight;
-
-            if ((creatureLeft < wallLeft && creatureLeft > wallRight && Math.abs(creatureLeft - wallRight) > COLLISION_MARGIN_ERROR) || (creatureRight < wallLeft && creatureRight > wallRight && Math.abs(creatureRight - wallLeft) > COLLISION_MARGIN_ERROR) || (creatureLeft > wallLeft && creatureRight < wallRight)) {
-                // the wall and creature collide in the x axis. Lets confirm they also intersect in the y direction
-                if ((creatureTop < wallTop && creatureTop > wallBottom && Math.abs(creatureTop - wallBottom) > COLLISION_MARGIN_ERROR) || (creatureBottom < wallTop && creatureBottom > wallBottom && Math.abs(creatureBottom - wallTop) > COLLISION_MARGIN_ERROR) || (creatureTop > wallTop && creatureBottom < wallBottom)) {
-                    //Log.i("COLLISION", "pacman:{"+creatureLeft+","+creatureTop+","+creatureRight+","+creatureBottom+"}, wall: {"+wallLeft+","+wallTop+","+wallRight+","+wallBottom+"}");
-                    return true; // Only section where the creature and the wall intersects, both in x and y axis.
-                }
-            }
-        }
-        return false;
-    }
-
-    // methods for calculuating the coordinates on the grid. Used for creating walls
-
-    //  gridLength takes in the number of pacman lengths and wall lengths and gives you the length of result
-    private float gridLength(int pac, int wall) {
-        return 2 * pac * PACMAN_RADIUS + wall * WALL_LENGTH;
-    }
-
-    public Pacman getPacman() {
-        return mPacman;
-    }
-
-    public ArrayList<String> getAvailableMovesString(Pacman monster) {
-        ArrayList<Integer> arr = getAvailableMoves(monster);
-        ArrayList<String> results = new ArrayList();
-        for (int i = 0; i < arr.size(); i++) {
-            Integer curMove = arr.get(i);
-            switch(curMove) {
-                case 0:
-                    results.add("Left");
-                    break;
-                case 1:
-                    results.add("Up");
-                    break;
-                case 2:
-                    results.add("Right");
-                    break;
-                case 3:
-                    results.add("Down");
-                    break;
-            }
-        }
-
-        return results;
-    }
-
-    public boolean isGoal() {
-        float pacX = mPacman.getFrame().getOriginX();
-        float pacY = mPacman.getFrame().getOriginY();
-        float goalX = 1.0f;// - gridLength(8,8);
-        float goalY = 1.0f;// - gridLength(8,8);
-
-        if (goalX == pacX && goalY == pacY) {
-            return true;
-        }
-
-        return false;
-    }
-
-    private int getNeighborDictIndex(int curX, int curY, int move, int returnIndex) { // return index is whether you want the x index or y index for the dictionary
+    public int getNeighborDictIndex(int curX, int curY, int move, int returnIndex) { // return index is whether you want the x index or y index for the dictionary
         int resultX = curX;
         int resultY = curY;
         switch (move) {
@@ -626,29 +304,69 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         return resultY;
     }
 
-    public ArrayList<Integer> simulateDFS() {
-        ArrayList<Integer> movesList = new ArrayList<Integer>();
-        Stack<Integer> stackX = new Stack<Integer>();
-        Stack<Integer> stackY = new Stack<Integer>();
-        boolean[][] dictionary = new boolean[140][140]; // dictionary is used to keep track of unique paths. Repeating paths will not show up as valid move
-        for (int i = 0; i < 140; i++) {
-            for (int j = 0; j < 140; j++) {
-                dictionary[i][j] = false; // initialize whole dictioanry to false
+
+    public void initDFS() {
+        tempGameBoardStack = new Stack<GameBoard>();
+        tempNode = mGameBoard;
+        tempVisited = new boolean[141][141]; // dictionary is used to keep track of unique paths. Repeating paths will not show up as valid move
+        for (int i = 0; i < 141; i++) {
+            for (int j = 0; j < 141; j++) {
+                tempVisited[i][j] = false; // initialize whole dictioanry to false
             }
         }
 
-        dictionary[0][0] = true; // top left corner is currently occupied
-        // get initial set of neighboring possible moves
-        ArrayList<Integer> initMoveset = getAvailableMoves(mPacman);
-        for(int i = 0; i < initMoveset.size(); i++) {
-            int curAvailMove = initMoveset.get(i);
-            stackX.push(getNeighborDictIndex(0,0,curAvailMove,INDEX_X));
-            stackY.push(getNeighborDictIndex(0,0,curAvailMove,INDEX_Y));
+        tempVisited[0][0] = true;
+
+        tempNode.fillChildren();
+        ArrayList<GameBoard> children = tempNode.getChildren();
+
+
+        for(int i = 0; i < children.size(); i++) {
+            GameBoard child = children.get(i);
+            tempGameBoardStack.push(child);
         }
 
-        while (!isGoal() && stackX.size() > 0) { // Loop until we find the goal
+        Log.i("Checkpoint","init complete. Stack: " + tempGameBoardStack.size());
+    }
+
+    public void DFSIter() {
+        if (!tempNode.isGoal() && tempGameBoardStack.size() > 0) { // Loop until we find the goal
+            tempNode = tempGameBoardStack.pop();
+
+            // We flag visited dictionary to show we have visited current node
+            int nodeVisitX = getDictionaryIndex(tempNode, VISIT_INDEX_X);
+            int nodeVisitY = getDictionaryIndex(tempNode, VISIT_INDEX_Y);
+            Log.i("Checkpoint","Visiting (" + String.valueOf(nodeVisitX) + "," + String.valueOf(nodeVisitY) + ") Stack: " + tempGameBoardStack.size());
+            tempVisited[nodeVisitX][nodeVisitY] = true;
+
+            tempNode.fillChildren();
+            ArrayList<GameBoard> children = tempNode.getChildren();
+
+            for(int i = 0; i < children.size(); i++) {
+                GameBoard child = children.get(i);
+                // we only push child into stack if we havent visited it yet. we check dictionary to see if child node has been visited
+                int childVisitX = getDictionaryIndex(child, VISIT_INDEX_X);
+                int childVisitY = getDictionaryIndex(child, VISIT_INDEX_Y);
+                if (!tempVisited[childVisitX][childVisitY]) {
+                    // if we havent already visited the current node, we push child into stack
+                    tempGameBoardStack.push(child);
+                }
+            }
+
+            // if node has no child and we're not at goal, we backtrack
+            if (!tempNode.isGoal() && children.size() == 0) {
+                // we need to "unvisit" the current node
+                tempVisited[nodeVisitX][nodeVisitY] = false;
+                Log.i("Checkpoint","Un-Visiting (" + String.valueOf(nodeVisitX) + "," + String.valueOf(nodeVisitY) + ") Stack: " + tempGameBoardStack.size());
 
 
+            }
+
+        }
+
+        if (tempNode.isGoal()) {
+            Log.i("Checkpoint","GOAL!");
         }
     }
+
 }

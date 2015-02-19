@@ -70,4 +70,8 @@ public class Frame {
         Log.e("Error: Frame.getShiftedFrame()","Returned original frame. Should never reach here.");
         return this; // should never get to this case
     }
+
+    public Frame clone() {
+        return new Frame(getOriginX(),getOriginY(),getWidth(),getHeight());
+    }
 }
