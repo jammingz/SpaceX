@@ -17,6 +17,12 @@ public class GameBoard {
     private static final float WALL_LENGTH = 3 * VELOCITY_MAX;
     private int currentMove;
 
+    private static final int LEFT_WALL = 0;
+    private static final int TOP_WALL = 1;
+    private static final int RIGHT_WALL = 2;
+    private static final int BOTTOM_WALL = 3;
+
+
     private float PACMAN_OFFSET_X;
     private float PACMAN_OFFSET_Y;
 
@@ -451,6 +457,56 @@ public class GameBoard {
             }
         }
         return false;
+    }
+
+    // Returns an ArrayList of collision detected. If collide from left of the frame, arraylist will contain
+    public ArrayList<Integer> collisionDetectionFrame(Frame frame) {
+        ArrayList<Integer> results = new ArrayList<Integer>();
+        float creatureLeft = frame.getOriginX();
+        float creatureTop = frame.getOriginY();
+        float creatureBottom = creatureTop - frame.getHeight();
+        float creatureRight = creatureLeft - frame.getWidth();
+
+        // Check if pacman collides with any wall
+        Iterator<Wall> wallIter = mWalls.iterator();
+        while (wallIter.hasNext()) {
+            Wall curWall = wallIter.next();
+            float wallLeft = curWall.getOriginX();
+            float wallTop = curWall.getOriginY();
+            float wallHeight = curWall.getHeight();
+            float wallWidth = curWall.getWidth();
+            float wallRight = wallLeft - wallWidth;
+            float wallBottom = wallTop - wallHeight;
+
+            if ((creatureLeft < wallLeft && creatureLeft > wallRight && Math.abs(creatureLeft - wallRight) > COLLISION_MARGIN_ERROR) || (creatureRight < wallLeft && creatureRight > wallRight && Math.abs(creatureRight - wallLeft) > COLLISION_MARGIN_ERROR) || (creatureLeft > wallLeft && creatureRight < wallRight)) {
+                // the wall and creature collide in the x axis. Lets confirm they also intersect in the y direction
+                if ((creatureTop < wallTop && creatureTop > wallBottom && Math.abs(creatureTop - wallBottom) > COLLISION_MARGIN_ERROR) || (creatureBottom < wallTop && creatureBottom > wallBottom && Math.abs(creatureBottom - wallTop) > COLLISION_MARGIN_ERROR) || (creatureTop > wallTop && creatureBottom < wallBottom)) {
+                    //Log.i("COLLISION", "pacman:{"+creatureLeft+","+creatureTop+","+creatureRight+","+creatureBottom+"}, wall: {"+wallLeft+","+wallTop+","+wallRight+","+wallBottom+"}");
+
+                    // This is where collision takes place, now we evaluate which side collides
+                    if ((creatureLeft < wallLeft && creatureLeft > wallRight && Math.abs(creatureLeft - wallRight) > COLLISION_MARGIN_ERROR)) {
+                        results.add(LEFT_WALL);
+                    }
+
+                    if (creatureRight < wallLeft && creatureRight > wallRight && Math.abs(creatureRight - wallLeft) > COLLISION_MARGIN_ERROR) {
+                        results.add(TOP_WALL);
+                    }
+
+                    if (creatureTop < wallTop && creatureTop > wallBottom && Math.abs(creatureTop - wallBottom) > COLLISION_MARGIN_ERROR) {
+                        results.add(RIGHT_WALL);
+                    }
+
+                    if (creatureBottom < wallTop && creatureBottom > wallBottom && Math.abs(creatureBottom - wallTop) > COLLISION_MARGIN_ERROR){
+                        results.add(BOTTOM_WALL);
+                    }
+                    break;
+                }
+
+                }
+            }
+
+
+        return results;
     }
 
     // methods for calculuating the coordinates on the grid. Used for creating walls
