@@ -15,6 +15,7 @@ public class GameBoard {
     private static final float COLLISION_MARGIN_ERROR = 0.00001f;
     protected static final float PACMAN_RADIUS = 0.066667f; // this radius gives us 15 pacman lengths across screen
     private static final float WALL_LENGTH = 3 * VELOCITY_MAX;
+    private int currentMove;
 
     private float PACMAN_OFFSET_X;
     private float PACMAN_OFFSET_Y;
@@ -29,6 +30,9 @@ public class GameBoard {
     private float mAngle;
     private int mPacmanSide; // {0: Pacman is showing right side of race, 1: Pacman is showing left side of face. Orthogonal to the screen and is facing the user}
     private static final float ANGLE_OFFSET = 0;
+    private OnTouchFrame mOnTouchFrame;
+    private OnTouchFrameInside mOnTouchFrameInside;
+    private boolean mDrawMarker;
 
     // Parent and children nodes
     GameBoard mParent;
@@ -37,6 +41,7 @@ public class GameBoard {
 
     private Pacman mPacman;
     private ArrayList<Wall> mWalls;
+    private Wall[][] mWallDictionary;
     private ArrayList<Consumable> mConsumables;
     private ArrayList<Food> mConsumedFoods;
 
@@ -45,6 +50,7 @@ public class GameBoard {
     public GameBoard() {
         PACMAN_OFFSET_X = 1.0f;
         PACMAN_OFFSET_Y = 1.0f;
+        mDrawMarker = false;
 
         mPacman = new Pacman(150,PACMAN_RADIUS,1.0f,1.0f,0.2f,1.0f);
         mPacman.setOrigin(PACMAN_OFFSET_X, PACMAN_OFFSET_Y);
@@ -53,6 +59,7 @@ public class GameBoard {
 
         // initializing children arrayList
         mChildren = new ArrayList<GameBoard>();
+
 
         // Creating borders
         Wall wall1 = new Wall(1 - gridLength(1, 0), 1 - gridLength(1, 0), WALL_LENGTH, gridLength(4, 5));
@@ -80,7 +87,7 @@ public class GameBoard {
         Wall wall23 = new Wall(1 - gridLength(8, 7), 1 - gridLength(3, 2), WALL_LENGTH, gridLength(6, 7));
 
         Wall border1 = new Wall(1.0f, 1 - gridLength(9, 8), gridLength(9, 9), WALL_LENGTH);
-        Wall border2 = new Wall(1 - gridLength(9, 8), 1.0f, WALL_LENGTH, gridLength(8, 8));
+        Wall border2 = new Wall(1 - gridLength(9, 8), 1.0f, WALL_LENGTH, gridLength(9, 8));
         mWalls = new ArrayList<Wall>();
         mWalls.add(wall1);
         mWalls.add(wall2);
@@ -109,6 +116,40 @@ public class GameBoard {
         mWalls.add(border2);
 
 
+        mWallDictionary = new Wall[141][141];
+
+        for (int i = 0; i < 141; i++) {
+            for (int j = 0; j < 141; j++) {
+                //mWallDictionary = null; // initializing dictionary to contain nulls
+            }
+        }
+
+        wallIntoDictionary(wall1);
+        wallIntoDictionary(wall2);
+        wallIntoDictionary(wall3);
+        wallIntoDictionary(wall4);
+        wallIntoDictionary(wall5);
+        wallIntoDictionary(wall6);
+        wallIntoDictionary(wall7);
+        wallIntoDictionary(wall8);
+        wallIntoDictionary(wall9);
+        wallIntoDictionary(wall10);
+        wallIntoDictionary(wall11);
+        wallIntoDictionary(wall12);
+        wallIntoDictionary(wall13);
+        wallIntoDictionary(wall14);
+        wallIntoDictionary(wall15);
+        wallIntoDictionary(wall16);
+        wallIntoDictionary(wall17);
+        wallIntoDictionary(wall18);
+        wallIntoDictionary(wall19);
+        wallIntoDictionary(wall20);
+        wallIntoDictionary(wall21);
+        wallIntoDictionary(wall22);
+        wallIntoDictionary(wall23);
+        wallIntoDictionary(border1);
+        wallIntoDictionary(border2);
+
         mConsumedFoods = new ArrayList<Food>();
         mConsumables = new ArrayList<Consumable>();
 
@@ -125,6 +166,10 @@ public class GameBoard {
 
         //Consumable c1 = new Consumable(0.4f,0f);
         //mConsumables.add(c1);
+
+        currentMove = 0;
+        mOnTouchFrame = new OnTouchFrame(getPacman().getFrame());
+        mOnTouchFrameInside = new OnTouchFrameInside(getPacman().getFrame(),0f,0f,0f);
 
     }
 
@@ -145,7 +190,10 @@ public class GameBoard {
         ArrayList<Food> consumedClone = new ArrayList<Food>(consumedFoods.size());
         for (Food item: consumedFoods) consumedClone.add(item);
         mConsumedFoods = consumedClone;
-
+        currentMove = 0;
+        mDrawMarker = false;
+        mOnTouchFrame = new OnTouchFrame(getPacman().getFrame());
+        mOnTouchFrameInside = new OnTouchFrameInside(getPacman().getFrame(),0f,0f,0f);
     }
 
     public void fillChildren() {
@@ -222,6 +270,15 @@ public class GameBoard {
             Consumable curConsumable = consumableIter.next();
             curConsumable.draw(matrix);
         }
+    }
+
+    public boolean drawOnTouch(float[] matrix) {
+        if (mDrawMarker) {
+            mOnTouchFrame.draw(matrix);
+            mOnTouchFrameInside.draw(matrix);
+            return true;
+        }
+        return false; // returns false if user did not press screen
     }
 
     public void flip(float[] rotationMatrix) {
@@ -509,6 +566,152 @@ public class GameBoard {
         return availableMoves;
     }
 
+
+    private void wallIntoDictionary(Wall wall) {
+        int x = Math.round((1 - wall.getOriginX())/VELOCITY_MAX);
+        int y = Math.round((1 - wall.getOriginY())/VELOCITY_MAX);
+        int r = Math.round(wall.getWidth()/VELOCITY_MAX);
+        int s = Math.round(wall.getHeight()/VELOCITY_MAX);
+
+
+
+        for (int i = 0; i < r; i++) {
+            for (int j = 0; j < s; j++) {
+                //Log.i("Dictionary","("+String.valueOf(i)+","+String.valueOf(j)+")");
+                mWallDictionary[x+i][y+j] = wall;
+            }
+        }
+    }
+
+
+    public Frame nearestPacmanSelection(float pixelX, float pixelY) {
+        int x = (int) ((pixelX * 141) / 720); // x coordinate on the surfaceview. there are 141 x 141 coordinates
+        int y = (int) ((pixelY * 141) / 720); // y coordinate
+
+        /*
+         We count the amount of left x coordinates from the current tap and the top y coordinates. We reset counter if we hit a wall, only counting the coordinates next to the
+         */
+
+        if (mWallDictionary[x][y] == null) { // empty space
+            int leftCounter = 0; // find how many index to the left are empty
+            int topCounter = 0; // find how many index to the top are empty
+            int rightCounter = 0;
+            int bottomCounter = 0;
+
+
+
+
+            // Count left coordinates from ontouch Point
+            for (int i = x - 1; i > x - 10 && i >= 0; i--) {
+                if (mWallDictionary[i][y] == null) {
+                    // it is empty slot, we increment leftCounter
+                    leftCounter++;
+                } else {
+                    break;
+                }
+            }
+
+            // Count right coordinates
+            for (int i = x + 1; i < x + 10 && i < 141; i++) {
+                if (mWallDictionary[i][y] == null) {
+                    // it is empty slot, we increment leftCounter
+                    rightCounter++;
+                } else {
+                    break;
+                }
+            }
+
+            // Count top coordinates
+            for (int j = y - 1; j > y - 10 && j >= 0; j--) {
+                if (mWallDictionary[x][j] == null) {
+                    // it is empty slot, we increment leftCounter
+                    topCounter++;
+                } else {
+                    break;
+                }
+            }
+
+            // Count top coordinates
+            for (int j = y + 1; j < y + 10 && j < 141; j++) {
+                if (mWallDictionary[x][j] == null) {
+                    // it is empty slot, we increment leftCounter
+                    bottomCounter++;
+                } else {
+                    break;
+                }
+            }
+
+
+            Log.i("WallCollision","("+String.valueOf(x)+","+String.valueOf(y)+","+String.valueOf(leftCounter)+","+String.valueOf(rightCounter)+","+String.valueOf(topCounter)+","+String.valueOf(bottomCounter)+")");
+
+            // Check to see if frame is wide enough. Should be 10 x 10 coordinates, otherwise, we return null for an impossible marker. left side + right side should be at least 9, we include the current onTouch point as an empty(non-colliding point)
+            if (leftCounter + rightCounter + 1 < 10 || topCounter + bottomCounter + 1 < 10) {
+                return null;
+            }
+
+            // Center border as much as possible without being inside a wall
+            int xOffset = leftCounter;
+            int yOffset = topCounter;
+
+
+            // Determining offset for x-coordinate
+            if (xOffset < 4) {
+                //xOffset = 4;
+            } else {
+                if (rightCounter < 4) {
+                    xOffset = 5 + 4 - rightCounter;
+                } else {
+                    xOffset = 5;
+                }
+            }
+
+            // Determining offset for y-coordinate
+            if (yOffset < 4) {
+                //yOffset = 4;
+            } else {
+                if (bottomCounter < 4) {
+                    yOffset = 5 + 4 - bottomCounter;
+                } else {
+                    yOffset = 5;
+                }
+            }
+
+            float frameX = 1 - VELOCITY_MAX * (x - xOffset);
+            float frameY = 1 - VELOCITY_MAX * (y - yOffset);
+
+            return new Frame(frameX,frameY,2 * PACMAN_RADIUS, 2 * PACMAN_RADIUS);
+        }
+        // if we are currently pressing on a wall, we return null since pacman cannot be in a wall
+        return null;
+
+    }
+
+    public boolean onTouch(float x, float y) {
+        Frame touchFrame = nearestPacmanSelection(x,y);
+        if (touchFrame != null) {
+            // True if we touched an empty spot
+            mOnTouchFrame.setFrame(touchFrame);
+
+            // Calculating the dimensions of the inner frame
+            float innerX = touchFrame.getOriginX() - touchFrame.getWidth() * 0.1f;
+            float innerY = touchFrame.getOriginY() - touchFrame.getHeight() * 0.1f;
+            float innerWidth = touchFrame.getWidth() * 0.8f;
+            float innerHeight = touchFrame.getHeight() * 0.8f;
+            mOnTouchFrameInside.setFrame(new Frame(innerX, innerY, innerWidth, innerHeight)); // black colored square
+        } else {
+            mDrawMarker = false;
+            return false;
+        }
+        mDrawMarker = true;
+        return true;
+    }
+
+    public void onRelease() {
+        mDrawMarker = false;
+        mOnTouchFrameInside.setFrame(getPacman().getFrame());
+        mOnTouchFrame.setFrame(getPacman().getFrame());
+    }
+
     /* Setter and Getter Methods */
 
 
@@ -542,6 +745,18 @@ public class GameBoard {
 
     public GameBoard getParent() {
         return mParent;
+    }
+
+    public void incrementMoveCount() {
+        currentMove++;
+    }
+
+    public void resetMoveCount() {
+        currentMove = 0;
+    }
+
+    public int getMoveCount() {
+        return currentMove;
     }
 
 

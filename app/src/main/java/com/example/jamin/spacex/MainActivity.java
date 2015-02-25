@@ -66,7 +66,9 @@ public class MainActivity extends Activity {
         controllerFrameLayout.setBackgroundColor(Color.BLACK);
 
         controllerFrameLayout.getLayoutParams().height = height - width;
-        controllerFrameLayout.getLayoutParams().width = width*2/3; // Take up half the width of the screen
+        //controllerFrameLayout.getLayoutParams().width = width*2/3; // Take up half the width of the screen
+        controllerFrameLayout.getLayoutParams().width = 0; // Take up half the width of the screen
+
 
         RelativeLayout consoleLayout = new RelativeLayout(this);
         consoleLayout.setId(R.id.consoleview);
@@ -79,11 +81,18 @@ public class MainActivity extends Activity {
         consoleLayout.setBackgroundColor(Color.BLACK);
 
         consoleLayout.getLayoutParams().height = height - width;
-        consoleLayout.getLayoutParams().width = width/3; // Take up half the width of the screen
+        consoleLayout.getLayoutParams().width = width; // Take up half the width of the screen
 
         mLayout.addView(mGLView);
         mLayout.addView(controllerFrameLayout);
         mLayout.addView(consoleLayout);
+
+        RelativeLayout.LayoutParams params1 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams params3 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams params4 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams params5 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+
 
 
         TextView debugWindow = new TextView(this);
@@ -97,48 +106,61 @@ public class MainActivity extends Activity {
         debugWindow2.setText("STATUS: --");
         debugWindow2.setTextColor(Color.WHITE);
         debugWindow2.setTextSize(14.0f);
+        params2.addRule(RelativeLayout.BELOW, R.id.debugWindow);
 
         TextView debugWindow3 = new TextView(this);
         debugWindow3.setId(R.id.debugWindow3);
         debugWindow3.setText("NODES: --");
         debugWindow3.setTextColor(Color.WHITE);
         debugWindow3.setTextSize(14.0f);
+        params3.addRule(RelativeLayout.BELOW, R.id.debugWindow2);
 
         TextView debugWindow4 = new TextView(this);
         debugWindow4.setId(R.id.debugWindow4);
         debugWindow4.setText("SCORE: 300");
         debugWindow4.setTextColor(Color.WHITE);
         debugWindow4.setTextSize(14.0f);
+        params4.addRule(RelativeLayout.BELOW, R.id.debugWindow3);
 
         TextView debugWindow5 = new TextView(this);
         debugWindow5.setId(R.id.debugWindow5);
         debugWindow5.setText("MOVES: {}");
         debugWindow5.setTextColor(Color.WHITE);
         debugWindow5.setTextSize(14.0f);
+        params5.addRule(RelativeLayout.BELOW, R.id.debugWindow4);
 
+        consoleLayout.addView(debugWindow,params1);
+        consoleLayout.addView(debugWindow2,params2);
+        consoleLayout.addView(debugWindow3,params3);
+        consoleLayout.addView(debugWindow4,params4);
+        consoleLayout.addView(debugWindow5,params5);
+
+
+        /*
         RelativeLayout.LayoutParams debugLayout = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
+        debugLayout.addRule(RelativeLayout.ALIGN_PARENT_LEFT,RelativeLayout.TRUE);
         debugWindow.setLayoutParams(debugLayout);
-        consoleLayout.addView(debugWindow);
 
         RelativeLayout.LayoutParams statusLayout = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
         statusLayout.addRule(RelativeLayout.BELOW, R.id.debugWindow);
         debugWindow2.setLayoutParams(statusLayout);
-        consoleLayout.addView(debugWindow2);
+
 
         RelativeLayout.LayoutParams nodeLayout = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
+        nodeLayout.addRule(RelativeLayout.RIGHT_OF, R.id.debugWindow2);
         nodeLayout.addRule(RelativeLayout.BELOW, R.id.debugWindow2);
         debugWindow3.setLayoutParams(nodeLayout);
+        consoleLayout.addView(debugWindow);
+        consoleLayout.addView(debugWindow2);
         consoleLayout.addView(debugWindow3);
 
-        RelativeLayout.LayoutParams controllerViewParams = new RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.MATCH_PARENT,
-                RelativeLayout.LayoutParams.MATCH_PARENT);
+
 
         RelativeLayout.LayoutParams scoreLayout = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
@@ -154,17 +176,14 @@ public class MainActivity extends Activity {
         debugWindow5.setLayoutParams(movesLayout);
         consoleLayout.addView(debugWindow5);
 
+        */
+
+        RelativeLayout.LayoutParams controllerViewParams = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.MATCH_PARENT,
+                RelativeLayout.LayoutParams.MATCH_PARENT);
         View controllerView = getLayoutInflater().inflate(R.layout.controller , null);
         controllerView.setLayoutParams(controllerViewParams);
         controllerFrameLayout.addView(controllerView);
-
-
-        // Temporary disable debug windows
-        debugWindow.setVisibility(View.GONE);
-        debugWindow2.setVisibility(View.GONE);
-        debugWindow3.setVisibility(View.GONE);
-        debugWindow4.setVisibility(View.GONE);
-
 
         mGLView.init(debugWindow, debugWindow2, debugWindow3, debugWindow4, debugWindow5, this);
 

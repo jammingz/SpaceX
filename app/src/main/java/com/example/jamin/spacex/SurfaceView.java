@@ -2,8 +2,10 @@ package com.example.jamin.spacex;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.AsyncTask;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,6 +38,8 @@ public class SurfaceView extends GLSurfaceView {
     private Activity mActivity;
     private Long currentTime;
     private Long dt;
+    private boolean isHold;
+
 
     private boolean temp;
 
@@ -55,7 +59,6 @@ public class SurfaceView extends GLSurfaceView {
         mFPS = 0;
         needsUpdate = false;
         temp = false;
-
     }
 
 
@@ -91,18 +94,33 @@ public class SurfaceView extends GLSurfaceView {
         // and other input controls. In this case, you are only
         // interested in events where the touch position changed.
 
+        float x = e.getX();
+        float y = e.getY();
+
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
 
+                /*
                 if (!isPacmanAnimating) {
-                    Toast.makeText(aContext, "Start Animation", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(aContext, "("+String.valueOf(x)+","+String.valueOf(y)+")", Toast.LENGTH_SHORT).show();
                     this.start();
                 } else {
                     stop();
-                    Toast.makeText(aContext, "Stop Animation", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(aContext, "("+String.valueOf(x)+","+String.valueOf(y)+")", Toast.LENGTH_SHORT).show();
                 }
 
+                */
+
+                mRenderer.onTouch(x,y);
+                requestRender();
+                break;
+            case MotionEvent.ACTION_UP:
+                mRenderer.onRelease();
+                requestRender();
+                break;
         }
+
+
         return true;
     }
 
@@ -114,7 +132,6 @@ public class SurfaceView extends GLSurfaceView {
         @Override
         protected Void doInBackground(Void... params) {
             // initialize search
-            final int numOfNodes = 0;
             ArrayList<Integer> solution = new ArrayList<Integer>();
 
             mActivity.runOnUiThread(new Runnable() {
@@ -127,6 +144,9 @@ public class SurfaceView extends GLSurfaceView {
             // Search algorithm applied here
             solution = mRenderer.simulateDFS();
 
+
+            final int numOfNode = solution.size();
+
             mActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -137,7 +157,7 @@ public class SurfaceView extends GLSurfaceView {
             mActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    updateDebug(nodeWindow, "NODES: " + String.valueOf(numOfNodes));
+                    updateDebug(nodeWindow, "NODES: " + String.valueOf(numOfNode));
                 }
             });
 
@@ -149,9 +169,10 @@ public class SurfaceView extends GLSurfaceView {
             solution.add(0,solution.get(0));
             int solutionIndex = 0;
             int solutionEnd = solution.size();
-            while (isPacmanAnimating && solutionIndex < solutionEnd) {
+            while (isPacmanAnimating && solutionIndex + 1 < solutionEnd) {
+                solutionIndex = mRenderer.getGameBoard().getMoveCount();
                 int curSolutionMove = solution.get(solutionIndex);
-                solutionIndex++;
+                mRenderer.getGameBoard().incrementMoveCount();
                 mFPS++;
                 currentTime = System.currentTimeMillis();
                 dt = currentTime - mLastTime;
@@ -167,28 +188,16 @@ public class SurfaceView extends GLSurfaceView {
                     mLastTime = currentTime;
                 }
                 */
-                if (true) {
-                //if (cumulativeDt >= 1000) {
-                    /*
-                    fps = 1000 * mFPS / cumulativeDt;
-                    cumulativeDt = 0;
-                    mFPS = 0;
-                    */
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
 
-
-
-                            //Long curFPS = mFPS / dt;
-                            //updateDebug("FPSs: " + Long.toString(( mFPS/(1+currentTime - mStartTime))));
-                            //updateDebug("FPS: " + Long.toString(curFPS));
-                            //updateDebug("FPS: " + Long.toString(curFPS));
-                            updateDebug(debugWindow, "FPS: " + Long.toString(mFPS));
-                            //stuff that updates ui
-                        }
-                    });
-                }
+                fps = 1000 * mFPS / cumulativeDt;
+                mActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Long curFPS = mFPS / dt;
+                        updateDebug(debugWindow, "FPS: " + Long.toString(dt));
+                        //stuff that updates ui
+                    }
+                });
 
                 //int currentFPS = round(mFPS/(currentTime - mStartTime));
 
@@ -201,6 +210,7 @@ public class SurfaceView extends GLSurfaceView {
                         e.printStackTrace();
                     }
                 }
+
                 rotatePacman(curSolutionMove);
                 requestRender();
 
@@ -235,6 +245,14 @@ public class SurfaceView extends GLSurfaceView {
                             updateDebug(movesWindow, "GOAL");
                         }
                     });
+                }
+
+                while (!mRenderer.isRenderComplete()) {
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
 
 

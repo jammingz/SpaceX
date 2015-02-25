@@ -31,15 +31,18 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     private final float[] mRotationMatrix = new float[16];
 
     private boolean mFirstDraw;
+    private boolean mDrawMarker;
     private GameBoard mGameBoard;
 
     private Stack<GameBoard> tempGameBoardStack;
     private GameBoard tempNode;
     private boolean[][] tempVisited;
+    private boolean isRenderComplete;
 
     public GLRenderer() {
 
         mFirstDraw = true;
+        mDrawMarker = false;
     }
 
     @Override
@@ -48,10 +51,12 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         mGameBoard = new GameBoard();
         mGameBoard.fillChildren();
+        isRenderComplete = true;
     }
 
     @Override
     public void onDrawFrame(GL10 unused) {
+        isRenderComplete = false;
         float[] scratch = new float[16];
         float[] results = new float[16];
         float[] mTranslateM = new float[16];
@@ -128,6 +133,12 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 
         // Draw all the consumables
         mGameBoard.drawConsumables(mMVPMatrix);
+        isRenderComplete = true;
+
+        // Draw onTouch selector if pressed
+        if (mDrawMarker) {
+            mGameBoard.drawOnTouch(mMVPMatrix);
+        }
 
     }
 
@@ -369,4 +380,17 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         }
     }
 
+
+    public boolean isRenderComplete() {
+        return isRenderComplete;
+    }
+
+    public void onTouch(float x, float y) {
+        mDrawMarker = mGameBoard.onTouch(x,y);
+    }
+
+    public void onRelease() {
+        mDrawMarker = false;
+        mGameBoard.onRelease();
+    }
 }
