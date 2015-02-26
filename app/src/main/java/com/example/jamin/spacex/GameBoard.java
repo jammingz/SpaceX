@@ -3,6 +3,7 @@ package com.example.jamin.spacex;
 import android.opengl.Matrix;
 import android.util.Log;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Stack;
@@ -17,12 +18,6 @@ public class GameBoard {
     private static final float WALL_LENGTH = 3 * VELOCITY_MAX;
     private int currentMove;
 
-    private static final int LEFT_WALL = 0;
-    private static final int TOP_WALL = 1;
-    private static final int RIGHT_WALL = 2;
-    private static final int BOTTOM_WALL = 3;
-
-
     private float PACMAN_OFFSET_X;
     private float PACMAN_OFFSET_Y;
 
@@ -30,8 +25,14 @@ public class GameBoard {
     private static final int UP_MOVE = 1;
     private static final int RIGHT_MOVE = 2;
     private static final int DOWN_MOVE = 3;
+    private static final int LEFT_WALL = 0;
+    private static final int TOP_WALL = 1;
+    private static final int RIGHT_WALL = 2;
+    private static final int BOTTOM_WALL = 3;
     protected static final int INDEX_X = 0;
     protected static final int INDEX_Y = 1;
+    private float goalX;
+    private float goalY;
 
     private float mAngle;
     private int mPacmanSide; // {0: Pacman is showing right side of race, 1: Pacman is showing left side of face. Orthogonal to the screen and is facing the user}
@@ -177,9 +178,13 @@ public class GameBoard {
         mOnTouchFrame = new OnTouchFrame(getPacman().getFrame());
         mOnTouchFrameInside = new OnTouchFrameInside(getPacman().getFrame(),0f,0f,0f);
 
+        // default goal
+        goalX = 1 - gridLength(8,8);
+        goalY = 1 - gridLength(8,8);
+
     }
 
-    private GameBoard(float angle, int pacmanSide, GameBoard parent, ArrayList<GameBoard> children, Pacman pacman, ArrayList<Wall> walls, ArrayList<Consumable> consumables, ArrayList<Food> consumedFoods)  {
+    private GameBoard(float angle, int pacmanSide, GameBoard parent, ArrayList<GameBoard> children, Pacman pacman, ArrayList<Wall> walls, ArrayList<Consumable> consumables, ArrayList<Food> consumedFoods, float goal_x, float goal_y)  {
         mAngle = angle;
         mPacmanSide = pacmanSide;
         mParent = parent;
@@ -200,6 +205,11 @@ public class GameBoard {
         mDrawMarker = false;
         mOnTouchFrame = new OnTouchFrame(getPacman().getFrame());
         mOnTouchFrameInside = new OnTouchFrameInside(getPacman().getFrame(),0f,0f,0f);
+
+        // default goal
+        goalX = goal_x;
+        goalY = goal_y;
+
     }
 
     public void fillChildren() {
@@ -239,7 +249,7 @@ public class GameBoard {
 
     private GameBoard simulateMove(int move) {
         // create clone GameBoard
-        GameBoard newBoard = new GameBoard(mAngle,mPacmanSide,mParent,mChildren,mPacman,mWalls,mConsumables,mConsumedFoods);
+        GameBoard newBoard = new GameBoard(mAngle,mPacmanSide,mParent,mChildren,mPacman,mWalls,mConsumables,mConsumedFoods,goalX,goalY);
         switch(move) {
             case LEFT_MOVE: // Move left
                 newBoard.setTranslation(newBoard.getPacman(),0);
@@ -459,7 +469,6 @@ public class GameBoard {
         return false;
     }
 
-    // Returns an ArrayList of collision detected. If collide from left of the frame, arraylist will contain
     public ArrayList<Integer> collisionDetectionFrame(Frame frame) {
         ArrayList<Integer> results = new ArrayList<Integer>();
         float creatureLeft = frame.getOriginX();
@@ -482,30 +491,36 @@ public class GameBoard {
                 // the wall and creature collide in the x axis. Lets confirm they also intersect in the y direction
                 if ((creatureTop < wallTop && creatureTop > wallBottom && Math.abs(creatureTop - wallBottom) > COLLISION_MARGIN_ERROR) || (creatureBottom < wallTop && creatureBottom > wallBottom && Math.abs(creatureBottom - wallTop) > COLLISION_MARGIN_ERROR) || (creatureTop > wallTop && creatureBottom < wallBottom)) {
                     //Log.i("COLLISION", "pacman:{"+creatureLeft+","+creatureTop+","+creatureRight+","+creatureBottom+"}, wall: {"+wallLeft+","+wallTop+","+wallRight+","+wallBottom+"}");
-
-                    // This is where collision takes place, now we evaluate which side collides
-                    if ((creatureLeft < wallLeft && creatureLeft > wallRight && Math.abs(creatureLeft - wallRight) > COLLISION_MARGIN_ERROR)) {
-                        results.add(LEFT_WALL);
+                    if (creatureLeft < wallLeft && creatureLeft > wallRight && Math.abs(creatureLeft - wallRight) > COLLISION_MARGIN_ERROR) {
+                        if (!results.contains(LEFT_WALL)) {
+                            results.add(LEFT_WALL);
+                        }
                     }
 
                     if (creatureRight < wallLeft && creatureRight > wallRight && Math.abs(creatureRight - wallLeft) > COLLISION_MARGIN_ERROR) {
-                        results.add(TOP_WALL);
+                        if (!results.contains(RIGHT_WALL)) {
+                            results.add(RIGHT_WALL);
+                        }
                     }
 
                     if (creatureTop < wallTop && creatureTop > wallBottom && Math.abs(creatureTop - wallBottom) > COLLISION_MARGIN_ERROR) {
-                        results.add(RIGHT_WALL);
+                        if (!results.contains(TOP_WALL)) {
+                            results.add(TOP_WALL);
+                        }
                     }
 
-                    if (creatureBottom < wallTop && creatureBottom > wallBottom && Math.abs(creatureBottom - wallTop) > COLLISION_MARGIN_ERROR){
-                        results.add(BOTTOM_WALL);
+                    if (creatureBottom < wallTop && creatureBottom > wallBottom && Math.abs(creatureBottom - wallTop) > COLLISION_MARGIN_ERROR) {
+                        if (!results.contains(BOTTOM_WALL)) {
+                            results.add(BOTTOM_WALL);
+                        }
                     }
-                    break;
-                }
-
                 }
             }
 
 
+
+
+        }
         return results;
     }
 
@@ -544,14 +559,18 @@ public class GameBoard {
     public boolean isGoal() {
         float pacX = mPacman.getFrame().getOriginX();
         float pacY = mPacman.getFrame().getOriginY();
-        float goalX = 1.0f - gridLength(8,8);
-        float goalY = 1.0f - gridLength(8,8);
 
         if (Math.abs(goalX - pacX) < COLLISION_MARGIN_ERROR && Math.abs(goalY - pacY) < COLLISION_MARGIN_ERROR) {
             return true;
         }
 
         return false;
+    }
+
+    public void setGoal(float x, float y) {
+        Log.i("setGoal","("+String.valueOf(x)+","+String.valueOf(y)+")");
+        goalX = x;
+        goalY = y;
     }
 
 
@@ -735,14 +754,40 @@ public class GameBoard {
             float frameX = 1 - VELOCITY_MAX * (x - xOffset);
             float frameY = 1 - VELOCITY_MAX * (y - yOffset);
 
-            return new Frame(frameX,frameY,2 * PACMAN_RADIUS, 2 * PACMAN_RADIUS);
+            Frame trialFrame = new Frame(frameX,frameY,2 * PACMAN_RADIUS, 2 * PACMAN_RADIUS);
+            ArrayList<Integer> collisionList = collisionDetectionFrame(trialFrame);
+            while (collisionList.size() > 0) { // If the ArrayList is greater than 0, there is a collision on 1 of the 4 sides of the frame
+                Iterator<Integer> collisionIter = collisionList.iterator();
+                while(collisionIter.hasNext()) {
+                    int wallCollision = collisionIter.next();
+                    switch (wallCollision) {
+                        case LEFT_WALL:
+                            trialFrame = trialFrame.getShiftedFrame(RIGHT_MOVE,VELOCITY_MAX);
+                            break;
+                        case TOP_WALL:
+                            trialFrame = trialFrame.getShiftedFrame(RIGHT_MOVE,VELOCITY_MAX);
+                            break;
+                        case RIGHT_WALL:
+                            trialFrame = trialFrame.getShiftedFrame(LEFT_MOVE,VELOCITY_MAX);
+                            break;
+                        case BOTTOM_WALL:
+                            trialFrame = trialFrame.getShiftedFrame(UP_MOVE,VELOCITY_MAX);
+                            break;
+                    }
+                }
+
+                collisionList = collisionDetectionFrame(trialFrame);
+            }
+
+            return trialFrame;
         }
         // if we are currently pressing on a wall, we return null since pacman cannot be in a wall
         return null;
 
     }
 
-    public boolean onTouch(float x, float y) {
+    // returns the frame of the nearest Frame to the touch point, if invalid, return null
+    public Frame onTouch(float x, float y) {
         Frame touchFrame = nearestPacmanSelection(x,y);
         if (touchFrame != null) {
             // True if we touched an empty spot
@@ -756,10 +801,10 @@ public class GameBoard {
             mOnTouchFrameInside.setFrame(new Frame(innerX, innerY, innerWidth, innerHeight)); // black colored square
         } else {
             mDrawMarker = false;
-            return false;
+            return null;
         }
         mDrawMarker = true;
-        return true;
+        return touchFrame;
     }
 
     public void onRelease() {

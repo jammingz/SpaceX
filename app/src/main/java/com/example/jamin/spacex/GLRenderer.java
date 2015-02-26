@@ -385,8 +385,14 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         return isRenderComplete;
     }
 
-    public void onTouch(float x, float y) {
-        mDrawMarker = mGameBoard.onTouch(x,y);
+    public Frame onTouch(float x, float y) {
+        Frame results = mGameBoard.onTouch(x,y);
+        if (results != null) {
+            mDrawMarker = true;
+        } else {
+            mDrawMarker = false;
+        }
+        return results;
     }
 
     public void onRelease() {

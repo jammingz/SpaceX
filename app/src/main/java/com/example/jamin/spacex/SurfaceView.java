@@ -41,7 +41,7 @@ public class SurfaceView extends GLSurfaceView {
     private boolean isHold;
 
 
-    private boolean temp;
+    private boolean startSearch;
 
     public SurfaceView(Context context) {
         super(context);
@@ -58,7 +58,7 @@ public class SurfaceView extends GLSurfaceView {
 
         mFPS = 0;
         needsUpdate = false;
-        temp = false;
+        startSearch = false;
     }
 
 
@@ -99,24 +99,23 @@ public class SurfaceView extends GLSurfaceView {
 
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                startSearch = false;
+                stop();
 
-                /*
-                if (!isPacmanAnimating) {
-                    Toast.makeText(aContext, "("+String.valueOf(x)+","+String.valueOf(y)+")", Toast.LENGTH_SHORT).show();
-                    this.start();
-                } else {
-                    stop();
-                    Toast.makeText(aContext, "("+String.valueOf(x)+","+String.valueOf(y)+")", Toast.LENGTH_SHORT).show();
+                Frame touchFrame = mRenderer.onTouch(x,y);
+                if (touchFrame != null) {
+                    mRenderer.getGameBoard().setGoal(touchFrame.getOriginX(),touchFrame.getOriginY());
+                    requestRender();
+                    startSearch = true;
                 }
 
-                */
-
-                mRenderer.onTouch(x,y);
-                requestRender();
                 break;
             case MotionEvent.ACTION_UP:
                 mRenderer.onRelease();
                 requestRender();
+                if (startSearch) {
+                    start();
+                }
                 break;
         }
 
