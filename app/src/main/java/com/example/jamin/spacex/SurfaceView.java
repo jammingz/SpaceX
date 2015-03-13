@@ -85,6 +85,14 @@ public class SurfaceView extends GLSurfaceView {
         new UpdateAnimationTask().execute();
 
     }
+    public void startGame() {
+        isPacmanAnimating = true;
+        mStartTime = System.currentTimeMillis();
+        mLastTime = mStartTime;
+
+        new UpdateAnimationTask().execute();
+    }
+
 
     public void stop() {
         isPacmanAnimating = false;
@@ -99,6 +107,7 @@ public class SurfaceView extends GLSurfaceView {
         float x = e.getX();
         float y = e.getY();
 
+        /*
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 startSearch = false;
@@ -123,6 +132,21 @@ public class SurfaceView extends GLSurfaceView {
                 break;
         }
 
+        */
+
+        switch (e.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                if (!isPacmanAnimating) {
+                    Toast.makeText(aContext,"Start",Toast.LENGTH_SHORT);
+                    start();
+                } else {
+                    Toast.makeText(aContext,"Stop",Toast.LENGTH_SHORT);
+                    stop();
+                }
+                break;
+
+        }
+
 
         return true;
     }
@@ -131,7 +155,7 @@ public class SurfaceView extends GLSurfaceView {
         view.setText(text);
     }
 
-    private class UpdateAnimationTask extends AsyncTask<Void, Void, Void> {
+    private class PathFinderTask extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... params) {
             // initialize search
@@ -270,6 +294,98 @@ public class SurfaceView extends GLSurfaceView {
                         }
                     });
                 }
+
+                while (!mRenderer.isRenderComplete()) {
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+
+            }
+
+
+            return null;
+        }
+
+    }
+
+    private class UpdateAnimationTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... params) {
+            mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    updateDebug(statusWindow, "STATUS: OK.");
+                }
+            });
+
+            // Begin Game Loop
+            long cumulativeDt = 0;
+            fps = 0;
+            while (isPacmanAnimating) {
+                mFPS++;
+                currentTime = System.currentTimeMillis();
+                dt = currentTime - mLastTime;
+                mLastTime = currentTime;
+                if (dt <= 0) {
+                    dt = new Long(1); // Cannot divide by 0 for FPS
+                }
+
+                cumulativeDt += dt;
+
+                fps = 1000 * mFPS / cumulativeDt;
+                /*
+                if (currentTime - mLastTime >= 1000) {
+                    mFPS = 0;
+                    mLastTime = currentTime;
+                }
+                */
+                mActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Long curFPS = mFPS / dt;
+                        updateDebug(debugWindow, "FPS: " + Long.toString(dt));
+                        //stuff that updates ui
+                    }
+                });
+
+                //int currentFPS = round(mFPS/(currentTime - mStartTime));
+
+
+
+                if (dt < 66) {
+                    try {
+                        Thread.sleep(66 - dt);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                requestRender();
+
+                ArrayList<String> pacmanMoves = mRenderer.getGameBoard().getAvailableMovesString(mRenderer.getGameBoard().getPacman());
+                // Now we format the moves into a string
+
+                movesString = "{";
+                if (pacmanMoves.size() > 0) {
+                    movesString += pacmanMoves.get(0);
+                }
+
+                for (int i = 1; i < pacmanMoves.size(); i++) {
+                    movesString += ", " + pacmanMoves.get(i);
+                }
+
+                movesString += "}";
+
+                mActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateDebug(movesWindow, "Moves: " + movesString);
+                    }
+                });
 
                 while (!mRenderer.isRenderComplete()) {
                     try {

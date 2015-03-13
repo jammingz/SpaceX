@@ -66,8 +66,7 @@ public class MainActivity extends Activity {
         controllerFrameLayout.setBackgroundColor(Color.BLACK);
 
         controllerFrameLayout.getLayoutParams().height = height - width;
-        //controllerFrameLayout.getLayoutParams().width = width*2/3; // Take up half the width of the screen
-        controllerFrameLayout.getLayoutParams().width = 0; // Take up half the width of the screen
+        controllerFrameLayout.getLayoutParams().width = width*2/3; // Take up half the width of the screen
 
 
         RelativeLayout consoleLayout = new RelativeLayout(this);
@@ -81,7 +80,7 @@ public class MainActivity extends Activity {
         consoleLayout.setBackgroundColor(Color.BLACK);
 
         consoleLayout.getLayoutParams().height = height - width;
-        consoleLayout.getLayoutParams().width = width; // Take up half the width of the screen
+        consoleLayout.getLayoutParams().width = width * 1/3; // Take up half the width of the screen
 
         mLayout.addView(mGLView);
         mLayout.addView(controllerFrameLayout);
