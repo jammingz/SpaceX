@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Stack;
 import java.util.logging.LoggingMXBean;
 
@@ -202,79 +205,6 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         return mGameBoard;
     }
 
-    public ArrayList<Integer> simulateDFS() {
-        ArrayList<Integer> solution = new ArrayList<Integer>();
-        Stack<GameBoard> gameBoardStack = new Stack<GameBoard>();
-        GameBoard curNode = mGameBoard;
-        boolean[][] visited = new boolean[141][141]; // dictionary is used to keep track of unique paths. Repeating paths will not show up as valid move
-        for (int i = 0; i < 141; i++) {
-            for (int j = 0; j < 141; j++) {
-                visited[i][j] = false; // initialize whole dictioanry to false
-            }
-        }
-
-        visited[0][0] = true; // top left corner is currently occupied
-        // get initial set of neighboring possible moves
-        // ArrayList<Integer> initMoveset = board.getAvailableMoves(board.getPacman());
-
-        curNode.fillChildren();
-        ArrayList<GameBoard> children = curNode.getChildren();
-
-        Log.i("Checkpoint","1");
-
-        for(int i = 0; i < children.size(); i++) {
-            GameBoard child = children.get(i);
-            gameBoardStack.push(child);
-        }
-
-
-        Log.i("Checkpoint","2");
-
-        while (!curNode.isGoal() && gameBoardStack.size() > 0 && SurfaceView.isPacmanAnimating) { // Loop until we find the goal
-            curNode = gameBoardStack.pop();
-
-            // We flag visited dictionary to show we have visited current node
-            int nodeVisitX = getDictionaryIndex(curNode, VISIT_INDEX_X);
-            int nodeVisitY = getDictionaryIndex(curNode, VISIT_INDEX_Y);
-            visited[nodeVisitX][nodeVisitY] = true;
-
-            curNode.fillChildren();
-            children = curNode.getChildren();
-
-            for(int i = 0; i < children.size(); i++) {
-                GameBoard child = children.get(i);
-                // we only push child into stack if we havent visited it yet. we check dictionary to see if child node has been visited
-                int childVisitX = getDictionaryIndex(child, VISIT_INDEX_X);
-                int childVisitY = getDictionaryIndex(child, VISIT_INDEX_Y);
-                Log.i("Checkpoint","Visiting (" + String.valueOf(nodeVisitX) + "," + String.valueOf(nodeVisitY) + ") Stack: " + gameBoardStack.size());
-                if (!visited[childVisitX][childVisitY]) {
-                    // if we havent already visited the current node, we push child into stack
-                    gameBoardStack.push(child);
-                }
-
-            }
-
-            // if node has no child and we're not at goal, we backtrack
-            if (!curNode.isGoal() && children.size() == 0) {
-                // we need to "unvisit" the current node
-                visited[nodeVisitX][nodeVisitY] = false;
-                Log.i("Checkpoint","Un-Visiting (" + String.valueOf(nodeVisitX) + "," + String.valueOf(nodeVisitY) + ") Stack: " + gameBoardStack.size());
-
-            }
-
-        }
-
-        Log.i("DFS", "Done");
-
-        // Time to traverse up the goal node up to parent.
-        while (curNode.getParent() != null) {
-            solution.add(curNode.getMoveFromParent());
-            curNode = curNode.getParent();
-        }
-        // Since the order of the solution is backwards from the goal to beginning, we need to reverse the solution list.
-        Collections.reverse(solution);
-        return solution;
-    }
 
     private int getDictionaryIndex(GameBoard board, int returnIndex) {  // return index is whether you want the x index or y index for the dictionary
         // first we find x and y coordinates of pacman
@@ -399,4 +329,260 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         mDrawMarker = false;
         mGameBoard.onRelease();
     }
+
+    public void skipNextFrame() {
+        mFirstDraw = true;
+    }
+
+
+    /* Search Algorithms */
+
+
+    public ArrayList<Integer> DFS() {
+        ArrayList<Integer> solution = new ArrayList<Integer>();
+        Stack<GameBoard> gameBoardStack = new Stack<GameBoard>();
+        GameBoard curNode = mGameBoard;
+        boolean[][] visited = new boolean[141][141]; // dictionary is used to keep track of unique paths. Repeating paths will not show up as valid move
+        for (int i = 0; i < 141; i++) {
+            for (int j = 0; j < 141; j++) {
+                visited[i][j] = false; // initialize whole dictioanry to false
+            }
+        }
+
+// RED ALERT. FIX VISIteD
+        visited[0][0] = true; // top left corner is currently occupied
+        // get initial set of neighboring possible moves
+        // ArrayList<Integer> initMoveset = board.getAvailableMoves(board.getPacman());
+
+        curNode.fillChildren();
+        ArrayList<GameBoard> children = curNode.getChildren();
+
+        Log.i("Checkpoint","1");
+
+        for(int i = 0; i < children.size(); i++) {
+            GameBoard child = children.get(i);
+            gameBoardStack.push(child);
+        }
+
+
+        Log.i("Checkpoint","2");
+
+        while (!curNode.isGoal() && gameBoardStack.size() > 0 && SurfaceView.isPacmanAnimating) { // Loop until we find the goal
+            curNode = gameBoardStack.pop();
+
+            // We flag visited dictionary to show we have visited current node
+            int nodeVisitX = getDictionaryIndex(curNode, VISIT_INDEX_X);
+            int nodeVisitY = getDictionaryIndex(curNode, VISIT_INDEX_Y);
+            visited[nodeVisitX][nodeVisitY] = true;
+
+            curNode.fillChildren();
+            children = curNode.getChildren();
+
+            for(int i = 0; i < children.size(); i++) {
+                GameBoard child = children.get(i);
+                // we only push child into stack if we havent visited it yet. we check dictionary to see if child node has been visited
+                int childVisitX = getDictionaryIndex(child, VISIT_INDEX_X);
+                int childVisitY = getDictionaryIndex(child, VISIT_INDEX_Y);
+                //Log.i("Checkpoint","Visiting (" + String.valueOf(nodeVisitX) + "," + String.valueOf(nodeVisitY) + ") Stack: " + gameBoardStack.size());
+                if (!visited[childVisitX][childVisitY]) {
+                    // if we havent already visited the current node, we push child into stack
+                    gameBoardStack.push(child);
+                }
+
+            }
+
+            // if node has no child and we're not at goal, we backtrack
+            if (!curNode.isGoal() && children.size() == 0) {
+                // we need to "unvisit" the current node
+                visited[nodeVisitX][nodeVisitY] = false;
+                Log.i("Checkpoint","Un-Visiting (" + String.valueOf(nodeVisitX) + "," + String.valueOf(nodeVisitY) + ") Stack: " + gameBoardStack.size());
+
+            }
+
+        }
+
+        Log.i("DFS", "Done");
+
+        // Time to traverse up the goal node up to parent.
+        while (curNode.getParent() != null) {
+            solution.add(curNode.getMoveFromParent());
+            curNode = curNode.getParent();
+        }
+        // Since the order of the solution is backwards from the goal to beginning, we need to reverse the solution list.
+        Collections.reverse(solution);
+        return solution;
+    }
+
+
+    public ArrayList<Integer> BFS() {
+        ArrayList<Integer> solution = new ArrayList<Integer>();
+        Queue<GameBoard> gameBoardQueue = new LinkedList<GameBoard>();
+        GameBoard curNode = mGameBoard;
+        boolean[][] visited = new boolean[141][141]; // dictionary is used to keep track of unique paths. Repeating paths will not show up as valid move
+        for (int i = 0; i < 141; i++) {
+            for (int j = 0; j < 141; j++) {
+                visited[i][j] = false; // initialize whole dictioanry to false
+            }
+        }
+
+        float originX = mGameBoard.getPacman().getOriginX();
+        float originY = mGameBoard.getPacman().getOriginY();
+        float origin[] = {originX,originY};
+
+        int originIndexes[] = mGameBoard.convertLocationIntoIndex(origin);
+        int originIndexX = originIndexes[0];
+        int originIndexY = originIndexes[1];
+        visited[originIndexX][originIndexY] = true;
+
+
+        // get initial set of neighboring possible moves
+        // ArrayList<Integer> initMoveset = board.getAvailableMoves(board.getPacman());
+
+        curNode.fillChildren();
+        ArrayList<GameBoard> children = curNode.getChildren();
+
+        Log.i("Checkpoint","1");
+
+        for(int i = 0; i < children.size(); i++) {
+            GameBoard child = children.get(i);
+            gameBoardQueue.add(child);
+        }
+
+
+        Log.i("Checkpoint","2");
+
+        while (!curNode.isGoal() && gameBoardQueue.size() > 0 && SurfaceView.isPacmanAnimating) { // Loop until we find the goal
+            curNode = gameBoardQueue.remove();
+
+            // We flag visited dictionary to show we have visited current node
+            int nodeVisitX = getDictionaryIndex(curNode, VISIT_INDEX_X);
+            int nodeVisitY = getDictionaryIndex(curNode, VISIT_INDEX_Y);
+            visited[nodeVisitX][nodeVisitY] = true;
+
+            curNode.fillChildren();
+            children = curNode.getChildren();
+
+            for(int i = 0; i < children.size(); i++) {
+                GameBoard child = children.get(i);
+                // we only push child into stack if we havent visited it yet. we check dictionary to see if child node has been visited
+                int childVisitX = getDictionaryIndex(child, VISIT_INDEX_X);
+                int childVisitY = getDictionaryIndex(child, VISIT_INDEX_Y);
+                //Log.i("Checkpoint","Visiting (" + String.valueOf(nodeVisitX) + "," + String.valueOf(nodeVisitY) + ") Stack: " + gameBoardQueue.size());
+                if (!visited[childVisitX][childVisitY]) {
+                    // if we havent already visited the current node, we push child into stack
+                    gameBoardQueue.add(child);
+                    visited[childVisitX][childVisitY] = true;
+                   // Log.i("Checkpoint","Adding Child (" + String.valueOf(nodeVisitX) + "," + String.valueOf(nodeVisitY) + ") Stack: " + gameBoardQueue.size());
+                }
+
+            }
+
+            // if node has no child and we're not at goal, we backtrack
+            if (!curNode.isGoal() && children.size() == 0) {
+                // we need to "unvisit" the current node
+                //visited[nodeVisitX][nodeVisitY] = false;
+                //Log.i("Checkpoint","Un-Visiting (" + String.valueOf(nodeVisitX) + "," + String.valueOf(nodeVisitY) + ") Stack: " + gameBoardQueue.size());
+
+            }
+
+        }
+
+        Log.i("DFS", "Done");
+
+        // Time to traverse up the goal node up to parent.
+        while (curNode.getParent() != null) {
+            solution.add(curNode.getMoveFromParent());
+            curNode = curNode.getParent();
+        }
+        // Since the order of the solution is backwards from the goal to beginning, we need to reverse the solution list.
+        Collections.reverse(solution);
+        return solution;
+    }
+
+    public ArrayList<Integer> Greedy() {
+        ArrayList<Integer> solution = new ArrayList<Integer>();
+        Queue<GameBoard> gameBoardQueue = new LinkedList<GameBoard>();
+        GameBoard curNode = mGameBoard;
+        boolean[][] visited = new boolean[141][141]; // dictionary is used to keep track of unique paths. Repeating paths will not show up as valid move
+        for (int i = 0; i < 141; i++) {
+            for (int j = 0; j < 141; j++) {
+                visited[i][j] = false; // initialize whole dictioanry to false
+            }
+        }
+
+        float originX = mGameBoard.getPacman().getOriginX();
+        float originY = mGameBoard.getPacman().getOriginY();
+        float origin[] = {originX,originY};
+
+        int originIndexes[] = mGameBoard.convertLocationIntoIndex(origin);
+        int originIndexX = originIndexes[0];
+        int originIndexY = originIndexes[1];
+        visited[originIndexX][originIndexY] = true;
+
+
+        // get initial set of neighboring possible moves
+        // ArrayList<Integer> initMoveset = board.getAvailableMoves(board.getPacman());
+
+        curNode.fillChildren();
+        ArrayList<GameBoard> children = curNode.getChildren();
+
+        Log.i("Checkpoint","1");
+
+        for(int i = 0; i < children.size(); i++) {
+            GameBoard child = children.get(i);
+            gameBoardQueue.add(child);
+        }
+
+
+        Log.i("Checkpoint","2");
+
+        while (!curNode.isGoal() && gameBoardQueue.size() > 0 && SurfaceView.isPacmanAnimating) { // Loop until we find the goal
+            curNode = gameBoardQueue.remove();
+
+            // We flag visited dictionary to show we have visited current node
+            int nodeVisitX = getDictionaryIndex(curNode, VISIT_INDEX_X);
+            int nodeVisitY = getDictionaryIndex(curNode, VISIT_INDEX_Y);
+            visited[nodeVisitX][nodeVisitY] = true;
+
+            curNode.fillChildren();
+            children = curNode.getChildren();
+
+            for(int i = 0; i < children.size(); i++) {
+                GameBoard child = children.get(i);
+                // we only push child into stack if we havent visited it yet. we check dictionary to see if child node has been visited
+                int childVisitX = getDictionaryIndex(child, VISIT_INDEX_X);
+                int childVisitY = getDictionaryIndex(child, VISIT_INDEX_Y);
+                //Log.i("Checkpoint","Visiting (" + String.valueOf(nodeVisitX) + "," + String.valueOf(nodeVisitY) + ") Stack: " + gameBoardQueue.size());
+                if (!visited[childVisitX][childVisitY]) {
+                    // if we havent already visited the current node, we push child into stack
+                    gameBoardQueue.add(child);
+                    visited[childVisitX][childVisitY] = true;
+                    // Log.i("Checkpoint","Adding Child (" + String.valueOf(nodeVisitX) + "," + String.valueOf(nodeVisitY) + ") Stack: " + gameBoardQueue.size());
+                }
+
+            }
+
+            // if node has no child and we're not at goal, we backtrack
+            if (!curNode.isGoal() && children.size() == 0) {
+                // we need to "unvisit" the current node
+                //visited[nodeVisitX][nodeVisitY] = false;
+                //Log.i("Checkpoint","Un-Visiting (" + String.valueOf(nodeVisitX) + "," + String.valueOf(nodeVisitY) + ") Stack: " + gameBoardQueue.size());
+
+            }
+
+        }
+
+        Log.i("DFS", "Done");
+
+        // Time to traverse up the goal node up to parent.
+        while (curNode.getParent() != null) {
+            solution.add(curNode.getMoveFromParent());
+            curNode = curNode.getParent();
+        }
+        // Since the order of the solution is backwards from the goal to beginning, we need to reverse the solution list.
+        Collections.reverse(solution);
+        return solution;
+    }
+
+
 }

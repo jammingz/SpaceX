@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.widget.TextView;
@@ -12,6 +13,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import static java.lang.Math.max;
 import static java.lang.Math.round;
 
 /**
@@ -105,6 +107,7 @@ public class SurfaceView extends GLSurfaceView {
                 Frame touchFrame = mRenderer.onTouch(x,y);
                 if (touchFrame != null) {
                     mRenderer.getGameBoard().setGoal(touchFrame.getOriginX(),touchFrame.getOriginY());
+                    mRenderer.skipNextFrame();
                     requestRender();
                     startSearch = true;
                 }
@@ -112,6 +115,7 @@ public class SurfaceView extends GLSurfaceView {
                 break;
             case MotionEvent.ACTION_UP:
                 mRenderer.onRelease();
+                mRenderer.skipNextFrame();
                 requestRender();
                 if (startSearch) {
                     start();
@@ -141,7 +145,8 @@ public class SurfaceView extends GLSurfaceView {
             });
 
             // Search algorithm applied here
-            solution = mRenderer.simulateDFS();
+            //solution = mRenderer.DFS();
+            solution = mRenderer.BFS();
 
 
             final int numOfNode = solution.size();
@@ -165,12 +170,35 @@ public class SurfaceView extends GLSurfaceView {
             long cumulativeDt = 0;
             fps = 0;
 
-            solution.add(0,solution.get(0));
+            //solution.add(0,solution.get(0));
             int solutionIndex = 0;
             int solutionEnd = solution.size();
-            while (isPacmanAnimating && solutionIndex + 1 < solutionEnd) {
+            mRenderer.getGameBoard().resetMoveCount();
+            float origin[] = new float[2];
+            origin[0] = mRenderer.getGameBoard().getPacman().getOriginX();
+            origin[1] = mRenderer.getGameBoard().getPacman().getOriginY();
+
+            ArrayList<float[]> coordinateList = mRenderer.getGameBoard().convertMovelistIntoCoordinates(origin,solution);
+
+            int maxRetries = 50;
+
+            while (isPacmanAnimating && solutionIndex + 1 < solutionEnd && maxRetries > 0) {
                 solutionIndex = mRenderer.getGameBoard().getMoveCount();
                 int curSolutionMove = solution.get(solutionIndex);
+                float[] predictededCoordinate = coordinateList.get(solutionIndex);
+                if (!mRenderer.getGameBoard().isSync(predictededCoordinate))  { // If the coordinates match, we proceed. Otherwise, we retry
+                    maxRetries--;
+                    //Log.i("Mixmatch coordinates","Retrying");
+                    try {
+                        Thread.sleep(5);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    continue;
+                } else {
+                    maxRetries = 50; // reset retry counter
+                }
+
                 mRenderer.getGameBoard().incrementMoveCount();
                 mFPS++;
                 currentTime = System.currentTimeMillis();
@@ -181,14 +209,14 @@ public class SurfaceView extends GLSurfaceView {
                 }
 
                 cumulativeDt += dt;
+
+                fps = 1000 * mFPS / cumulativeDt;
                 /*
                 if (currentTime - mLastTime >= 1000) {
                     mFPS = 0;
                     mLastTime = currentTime;
                 }
                 */
-
-                fps = 1000 * mFPS / cumulativeDt;
                 mActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -212,9 +240,6 @@ public class SurfaceView extends GLSurfaceView {
 
                 rotatePacman(curSolutionMove);
                 requestRender();
-
-
-
 
                 ArrayList<String> pacmanMoves = mRenderer.getGameBoard().getAvailableMovesString(mRenderer.getGameBoard().getPacman());
                 // Now we format the moves into a string

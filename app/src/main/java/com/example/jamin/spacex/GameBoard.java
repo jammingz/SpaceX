@@ -68,6 +68,12 @@ public class GameBoard {
         mChildren = new ArrayList<GameBoard>();
 
 
+        /*
+         * First set of walls for maze
+         */
+
+        /*
+
         // Creating borders
         Wall wall1 = new Wall(1 - gridLength(1, 0), 1 - gridLength(1, 0), WALL_LENGTH, gridLength(4, 5));
         Wall wall2 = new Wall(1 - gridLength(1, 1), 1 - gridLength(1, 0), gridLength(1, 1), WALL_LENGTH);
@@ -157,9 +163,236 @@ public class GameBoard {
         wallIntoDictionary(border1);
         wallIntoDictionary(border2);
 
+        */
+
+        /*
+         * Second set of walls for a real circular maze
+         */
+
+
+        Wall wall1 = new Wall(1 - gridLength(1, 0), 1 - gridLength(1, 0), WALL_LENGTH, gridLength(1, 2));
+        Wall wall2 = new Wall(1 - gridLength(1, 1), 1 - gridLength(1, 0), gridLength(1, 1), WALL_LENGTH);
+        Wall wall3 = new Wall(1 - gridLength(1, 1), 1 - gridLength(2, 1), gridLength(1, 1), WALL_LENGTH);
+        Wall wall4 = new Wall(1 - gridLength(2, 1), 1 - gridLength(1, 1), WALL_LENGTH, gridLength(1, 0));
+
+        Wall wall5 = new Wall(1 - gridLength(3, 2), 1 - gridLength(1, 0), WALL_LENGTH, gridLength(1, 2));
+        Wall wall6 = new Wall(1 - gridLength(3, 3), 1 - gridLength(1, 0), gridLength(1, 1), WALL_LENGTH);
+        Wall wall7 = new Wall(1 - gridLength(3, 3), 1 - gridLength(2, 1), gridLength(1, 1), WALL_LENGTH);
+        Wall wall8 = new Wall(1 - gridLength(4, 3), 1 - gridLength(1, 1), WALL_LENGTH, gridLength(1, 0));
+
+        Wall wall9 = new Wall(1 - (gridLength(5, 5) + PACMAN_RADIUS - WALL_LENGTH/2), 1 - gridLength(0,0), WALL_LENGTH, gridLength(2, 2));
+
+        Wall wall10 = new Wall(1 - gridLength(7, 6), 1 - gridLength(1, 0), WALL_LENGTH, gridLength(1, 2));
+        Wall wall11 = new Wall(1 - gridLength(7, 7), 1 - gridLength(1, 0), gridLength(1, 1), WALL_LENGTH);
+        Wall wall12 = new Wall(1 - gridLength(7, 7), 1 - gridLength(2, 1), gridLength(1, 1), WALL_LENGTH);
+        Wall wall13 = new Wall(1 - gridLength(8, 7), 1 - gridLength(1, 1), WALL_LENGTH, gridLength(1, 0));
+
+        Wall wall14 = new Wall(1 - gridLength(9, 8), 1 - gridLength(1, 0), WALL_LENGTH, gridLength(1, 2));
+        Wall wall15 = new Wall(1 - gridLength(9, 9), 1 - gridLength(1, 0), gridLength(1, 1), WALL_LENGTH);
+        Wall wall16 = new Wall(1 - gridLength(9, 9), 1 - gridLength(2, 1), gridLength(1, 1), WALL_LENGTH);
+        Wall wall17 = new Wall(1 - gridLength(10, 9), 1 - gridLength(1, 1), WALL_LENGTH, gridLength(1, 0));
+
+        Wall wall18 = new Wall(1 - gridLength(1, 0), 1 - gridLength(3, 2), gridLength(1, 2), WALL_LENGTH);
+
+        Wall wall19 = new Wall(1 - gridLength(0, 0), 1 - gridLength(4, 3), gridLength(1, 1), WALL_LENGTH);
+
+        Wall wall20 = new Wall(1 - gridLength(3, 2), 1 - gridLength(3, 2), WALL_LENGTH, gridLength(2, 3));
+        Wall wall21 = new Wall(1 - gridLength(2, 1), 1 - gridLength(4, 3), gridLength(2, 3), WALL_LENGTH);
+
+        Wall wall22 = new Wall(1 - gridLength(4, 3), 1 - gridLength(3, 2), gridLength(3, 4), WALL_LENGTH);
+        Wall wall23 = new Wall(1 - (gridLength(5, 5) + PACMAN_RADIUS - WALL_LENGTH/2), 1 - gridLength(3, 2), WALL_LENGTH, gridLength(1,1));
+
+        Wall wall24 = new Wall(1 - gridLength(8, 7), 1 - gridLength(3, 2), WALL_LENGTH, gridLength(2, 3));
+        Wall wall25 = new Wall(1 - gridLength(7, 6), 1 - gridLength(4, 3), gridLength(2, 3), WALL_LENGTH);
+
+
+        Wall wall26 = new Wall(1 - gridLength(9, 8), 1 - gridLength(3, 2), gridLength(1, 2), WALL_LENGTH);
+
+        Wall wall27 = new Wall(1 - gridLength(10, 9), 1 - gridLength(4, 3), gridLength(1, 1), WALL_LENGTH);
+
+
+        Wall wall28 = new Wall(1 - gridLength(0, 0), 1 - gridLength(5, 4), gridLength(2, 1), WALL_LENGTH);
+        Wall wall29 = new Wall(1 - gridLength(0, 0), 1 - gridLength(6, 5), gridLength(2, 1), WALL_LENGTH);
+        Wall wall30 = new Wall(1 - gridLength(2, 1), 1 - gridLength(5, 4), WALL_LENGTH, gridLength(1,2));
+
+        Wall wall31 = new Wall(1 - gridLength(4, 3), 1 - gridLength(5, 4), gridLength(3, 4), WALL_LENGTH);
+        Wall wall32 = new Wall(1 - gridLength(4, 3), 1 - gridLength(6, 5), gridLength(3, 4), WALL_LENGTH);
+        Wall wall33 = new Wall(1 - gridLength(4, 3), 1 - gridLength(5, 5), WALL_LENGTH, gridLength(1,0));
+        Wall wall34 = new Wall(1 - gridLength(7, 6), 1 - gridLength(5, 5), WALL_LENGTH, gridLength(1,0));
+
+        Wall wall35 = new Wall(1 - gridLength(9, 8), 1 - gridLength(5, 4), gridLength(2, 1), WALL_LENGTH);
+        Wall wall36 = new Wall(1 - gridLength(9, 8), 1 - gridLength(6, 5), gridLength(2, 1), WALL_LENGTH);
+        Wall wall37 = new Wall(1 - gridLength(9, 8), 1 - gridLength(5, 4), WALL_LENGTH, gridLength(1,2));
+
+        Wall wall38 = new Wall(1 - gridLength(1, 0), 1 - gridLength(7, 6), gridLength(2, 2), WALL_LENGTH);
+        Wall wall39 = new Wall(1 - gridLength(3, 2), 1 - gridLength(6, 5), WALL_LENGTH, gridLength(1,2));
+
+        Wall wall40 = new Wall(1 - gridLength(4, 3), 1 - gridLength(7, 6), gridLength(3, 4), WALL_LENGTH);
+        Wall wall41 = new Wall(1 - (gridLength(5, 5) + PACMAN_RADIUS - WALL_LENGTH/2), 1 - gridLength(7, 7), WALL_LENGTH, gridLength(1,1));
+
+        Wall wall42 = new Wall(1 - gridLength(8, 8), 1 - gridLength(7, 6), gridLength(2, 2), WALL_LENGTH);
+        Wall wall43 = new Wall(1 - gridLength(8, 7), 1 - gridLength(6, 5), WALL_LENGTH, gridLength(1,2));
+
+        Wall wall44 = new Wall(1 - gridLength(0, 0), 1 - gridLength(8, 7), gridLength(1, 0), WALL_LENGTH);
+        Wall wall45 = new Wall(1 - gridLength(0, 0), 1 - gridLength(9, 8), gridLength(1, 0), WALL_LENGTH);
+        Wall wall46 = new Wall(1 - gridLength(1, 0), 1 - gridLength(8, 7), WALL_LENGTH, gridLength(1,2));
+
+        Wall wall47 = new Wall(1 - gridLength(3, 3), 1 - gridLength(8, 7), gridLength(1, 1), WALL_LENGTH);
+        Wall wall48 = new Wall(1 - gridLength(3, 2), 1 - gridLength(8, 7), WALL_LENGTH, gridLength(1,2));
+
+        Wall wall49 = new Wall(1 - gridLength(4, 3), 1 - gridLength(9, 8), gridLength(3, 4), WALL_LENGTH);
+
+        Wall wall50 = new Wall(1 - gridLength(7, 6), 1 - gridLength(8, 7), gridLength(1, 1), WALL_LENGTH);
+        Wall wall51 = new Wall(1 - gridLength(8, 7), 1 - gridLength(8, 7), WALL_LENGTH, gridLength(1,2));
+
+        Wall wall52 = new Wall(1 - gridLength(10, 9), 1 - gridLength(8, 7), gridLength(1, 0), WALL_LENGTH);
+        Wall wall53 = new Wall(1 - gridLength(10, 9), 1 - gridLength(9, 8), gridLength(1, 0), WALL_LENGTH);
+        Wall wall54 = new Wall(1 - gridLength(10, 9), 1 - gridLength(8, 7), WALL_LENGTH, gridLength(1,2));
+
+        Wall wall55 = new Wall(1 - gridLength(1, 0), 1 - gridLength(10, 9), gridLength(2, 3), WALL_LENGTH);
+        Wall wall56 = new Wall(1 - gridLength(2, 1), 1 - gridLength(8, 7), WALL_LENGTH, gridLength(2,2));
+
+        Wall wall57 = new Wall(1 - gridLength(4, 3), 1 - gridLength(10, 9), gridLength(3, 4), WALL_LENGTH);
+
+        Wall wall58 = new Wall(1 - gridLength(8, 7), 1 - gridLength(10, 9), gridLength(2, 3), WALL_LENGTH);
+        Wall wall59 = new Wall(1 - gridLength(9, 8), 1 - gridLength(8, 7), WALL_LENGTH, gridLength(2,2));
+
+        mWalls = new ArrayList<Wall>();
+        mWalls.add(wall1);
+        mWalls.add(wall2);
+        mWalls.add(wall3);
+        mWalls.add(wall4);
+        mWalls.add(wall5);
+        mWalls.add(wall6);
+        mWalls.add(wall7);
+        mWalls.add(wall8);
+        mWalls.add(wall9);
+        mWalls.add(wall10);
+        mWalls.add(wall11);
+        mWalls.add(wall12);
+        mWalls.add(wall13);
+        mWalls.add(wall14);
+        mWalls.add(wall15);
+        mWalls.add(wall16);
+        mWalls.add(wall17);
+        mWalls.add(wall18);
+        mWalls.add(wall19);
+        mWalls.add(wall20);
+        mWalls.add(wall21);
+        mWalls.add(wall22);
+        mWalls.add(wall23);
+        mWalls.add(wall24);
+        mWalls.add(wall25);
+        mWalls.add(wall26);
+        mWalls.add(wall27);
+        mWalls.add(wall28);
+        mWalls.add(wall29);
+        mWalls.add(wall30);
+        mWalls.add(wall31);
+        mWalls.add(wall32);
+        mWalls.add(wall33);
+        mWalls.add(wall34);
+        mWalls.add(wall35);
+        mWalls.add(wall36);
+        mWalls.add(wall37);
+        mWalls.add(wall38);
+        mWalls.add(wall39);
+        mWalls.add(wall40);
+        mWalls.add(wall41);
+        mWalls.add(wall42);
+        mWalls.add(wall43);
+        mWalls.add(wall44);
+        mWalls.add(wall45);
+        mWalls.add(wall46);
+        mWalls.add(wall47);
+        mWalls.add(wall48);
+        mWalls.add(wall49);
+        mWalls.add(wall50);
+        mWalls.add(wall51);
+        mWalls.add(wall52);
+        mWalls.add(wall53);
+        mWalls.add(wall54);
+        mWalls.add(wall55);
+        mWalls.add(wall56);
+        mWalls.add(wall57);
+        mWalls.add(wall58);
+        mWalls.add(wall59);
+
+
+        mWallDictionary = new Wall[141][141];
+
+        for (int i = 0; i < 141; i++) {
+            for (int j = 0; j < 141; j++) {
+                //mWallDictionary = null; // initializing dictionary to contain nulls
+            }
+        }
+
+        wallIntoDictionary(wall1);
+        wallIntoDictionary(wall2);
+        wallIntoDictionary(wall3);
+        wallIntoDictionary(wall4);
+        wallIntoDictionary(wall5);
+        wallIntoDictionary(wall6);
+        wallIntoDictionary(wall7);
+        wallIntoDictionary(wall8);
+        wallIntoDictionary(wall9);
+        wallIntoDictionary(wall10);
+        wallIntoDictionary(wall11);
+        wallIntoDictionary(wall12);
+        wallIntoDictionary(wall13);
+        wallIntoDictionary(wall14);
+        wallIntoDictionary(wall15);
+        wallIntoDictionary(wall16);
+        wallIntoDictionary(wall17);
+        wallIntoDictionary(wall18);
+        wallIntoDictionary(wall19);
+        wallIntoDictionary(wall20);
+        wallIntoDictionary(wall21);
+        wallIntoDictionary(wall22);
+        wallIntoDictionary(wall23);
+        wallIntoDictionary(wall24);
+        wallIntoDictionary(wall25);
+        wallIntoDictionary(wall26);
+        wallIntoDictionary(wall27);
+        wallIntoDictionary(wall28);
+        wallIntoDictionary(wall29);
+        wallIntoDictionary(wall30);
+        wallIntoDictionary(wall31);
+        wallIntoDictionary(wall32);
+        wallIntoDictionary(wall33);
+        wallIntoDictionary(wall34);
+        wallIntoDictionary(wall35);
+        wallIntoDictionary(wall36);
+        wallIntoDictionary(wall37);
+        wallIntoDictionary(wall38);
+        wallIntoDictionary(wall39);
+        wallIntoDictionary(wall40);
+        wallIntoDictionary(wall41);
+        wallIntoDictionary(wall42);
+        wallIntoDictionary(wall43);
+        wallIntoDictionary(wall44);
+        wallIntoDictionary(wall45);
+        wallIntoDictionary(wall46);
+        wallIntoDictionary(wall47);
+        wallIntoDictionary(wall48);
+        wallIntoDictionary(wall49);
+        wallIntoDictionary(wall50);
+        wallIntoDictionary(wall51);
+        wallIntoDictionary(wall52);
+        wallIntoDictionary(wall53);
+        wallIntoDictionary(wall54);
+        wallIntoDictionary(wall55);
+        wallIntoDictionary(wall56);
+        wallIntoDictionary(wall57);
+        wallIntoDictionary(wall58);
+        wallIntoDictionary(wall59);
+
+
+
         mConsumedFoods = new ArrayList<Food>();
         mConsumables = new ArrayList<Consumable>();
 
+        /*
         for (int i = 1; i < 8; i++) {
             Consumable c = new Consumable(2 * PACMAN_RADIUS * i, 0f);
             mConsumables.add(c);
@@ -169,6 +402,8 @@ public class GameBoard {
             Consumable c = new Consumable(2 * PACMAN_RADIUS * 7, -2 * PACMAN_RADIUS * i);
             mConsumables.add(c);
         }
+
+        */
 
 
         //Consumable c1 = new Consumable(0.4f,0f);
@@ -858,6 +1093,116 @@ public class GameBoard {
 
     public int getMoveCount() {
         return currentMove;
+    }
+
+    private float[] coordinatesAfterMove(float[] origin, int move) {
+        float originX = origin[0];
+        float originY = origin[1];
+
+        float results[] = new float[2];
+
+        switch (move) {
+            case LEFT_MOVE:
+                if (originX + VELOCITY_MAX > 1.0f) { // out of bound, return same coordinates
+                    Log.i("coordinatesAfterMove","Out of bounds: LEFT MOVE");
+                    results = origin;
+                } else {
+                    results[0] = originX + VELOCITY_MAX;
+                    results[1] = originY;
+                }
+                break;
+
+            case UP_MOVE:
+                if (originY + VELOCITY_MAX > 1.0f) { // out of bound, return same coordinates
+                    Log.i("coordinatesAfterMove","Out of bounds: UP MOVE");
+                    results = origin;
+                } else {
+                    results[0] = originX;
+                    results[1] = originY + VELOCITY_MAX;
+                }
+                break;
+
+            case RIGHT_MOVE:
+                if (originX - VELOCITY_MAX < -1.0f) { // out of bound, return same coordinates
+                    Log.i("coordinatesAfterMove","Out of bounds: RIGHT MOVE");
+                    results = origin;
+                } else {
+                    results[0] = originX - VELOCITY_MAX;
+                    results[1] = originY;
+                }
+                break;
+
+            case DOWN_MOVE:
+                if (originY - VELOCITY_MAX < -1.0f) { // out of bound, return same coordinates
+                    Log.i("coordinatesAfterMove","Out of bounds: DOWN MOVE");
+                    results = origin;
+                } else {
+                    results[0] = originX;
+                    results[1] = originY - VELOCITY_MAX;
+                }
+                break;
+        }
+
+        return results;
+    }
+
+
+    public ArrayList<float[]> convertMovelistIntoCoordinates(float[] origin, ArrayList<Integer> movelist) {
+        ArrayList<float[]> results = new ArrayList<float[]>();
+        results.add(origin); // Insert initial coordinates into beginning of arraylist
+        Iterator<Integer> moveIter = movelist.iterator();
+        float[] initCoords = origin;
+        while (moveIter.hasNext()) {
+            int curMove = moveIter.next();
+            float[] finalCoords = coordinatesAfterMove(initCoords,curMove);
+            results.add(finalCoords);
+            initCoords = finalCoords;
+        }
+        return results;
+    }
+
+    // Check to see if pacman is at the 'origin' location
+    public boolean isSync(float[] origin) {
+        float pacmanX = getPacman().getOriginX();
+        float pacmanY = getPacman().getOriginY();
+
+        if (Math.abs(pacmanX - origin[0]) < COLLISION_MARGIN_ERROR && Math.abs(pacmanY - origin[1]) < COLLISION_MARGIN_ERROR) {
+            // Return true only if pacman is in the same coordinates. We account for rounding error with the margin of error
+            return true;
+        }
+
+        return false;
+
+    }
+
+    public int[] convertLocationIntoIndex(float[] location) {
+        int results[] = new int[2];
+        float locationX = 1 - location[0];
+        float locationY = 1 - location[1];
+        int resultX = 0;
+        int resultY = 0;
+
+        // Solve for x index first
+        resultX = Math.round(locationX / VELOCITY_MAX);
+        resultY = Math.round(locationY / VELOCITY_MAX);
+
+        results[0] = resultX;
+        results[1] = resultY;
+        return results;
+    }
+
+
+    /*
+     * Finds the euclidean distance between two coordinates
+     */
+    private float eucDistance(float originX, float originY, float endX, float endY) {
+        float dx = Math.abs(originX - endX);
+        float dy = Math.abs(originY - endY);
+        return (float) Math.sqrt(dx * dx + dy * dy);
+    }
+
+    public float heuristic(float originX, float originY) {
+        return eucDistance(originX,originY,goalX,goalY);
     }
 
 
