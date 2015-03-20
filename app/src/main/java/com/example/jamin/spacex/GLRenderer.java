@@ -129,6 +129,7 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 
         //mPacman.draw(results);
         mGameBoard.drawPacman(results);
+        mGameBoard.drawGhost(mMVPMatrix);
         mGameBoard.setPacmanAngle( mGameBoard.getPacmanAngle() % 360);
 
         // Draw all the walls

@@ -82,7 +82,7 @@ public class SurfaceView extends GLSurfaceView {
         mStartTime = System.currentTimeMillis();
         mLastTime = mStartTime;
 
-        new UpdateAnimationTask().execute();
+        new PathFinderTask().execute();
 
     }
     public void startGame() {
@@ -107,7 +107,6 @@ public class SurfaceView extends GLSurfaceView {
         float x = e.getX();
         float y = e.getY();
 
-        /*
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 startSearch = false;
@@ -132,8 +131,7 @@ public class SurfaceView extends GLSurfaceView {
                 break;
         }
 
-        */
-
+/*
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 if (!isPacmanAnimating) {
@@ -147,7 +145,7 @@ public class SurfaceView extends GLSurfaceView {
 
         }
 
-
+*/
         return true;
     }
 

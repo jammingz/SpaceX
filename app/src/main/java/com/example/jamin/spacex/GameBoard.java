@@ -47,6 +47,7 @@ public class GameBoard {
     ArrayList<GameBoard> mChildren;
 
     private Pacman mPacman;
+    private Ghost mGhost;
     private ArrayList<Wall> mWalls;
     private Wall[][] mWallDictionary;
     private ArrayList<Consumable> mConsumables;
@@ -61,6 +62,7 @@ public class GameBoard {
 
         mPacman = new Pacman(150,PACMAN_RADIUS,1.0f,1.0f,0.2f,1.0f);
         mPacman.setOrigin(PACMAN_OFFSET_X, PACMAN_OFFSET_Y);
+        mGhost = new Ghost(150,1.0f,1.0f,0.2f,1.0f);
         mAngle = 0; // Initialize angle to 0 degrees.
         mPacmanSide = 0; // Initialize at seeing right side
 
@@ -419,12 +421,13 @@ public class GameBoard {
 
     }
 
-    private GameBoard(float angle, int pacmanSide, GameBoard parent, ArrayList<GameBoard> children, Pacman pacman, ArrayList<Wall> walls, ArrayList<Consumable> consumables, ArrayList<Food> consumedFoods, float goal_x, float goal_y)  {
+    private GameBoard(float angle, int pacmanSide, GameBoard parent, ArrayList<GameBoard> children, Pacman pacman, Ghost ghost, ArrayList<Wall> walls, ArrayList<Consumable> consumables, ArrayList<Food> consumedFoods, float goal_x, float goal_y)  {
         mAngle = angle;
         mPacmanSide = pacmanSide;
         mParent = parent;
         mChildren = children;
         mPacman = pacman.clone();
+        mGhost = ghost.clone();
         mWalls = walls;
 
         // Creating a clone of consumables. This cloning is only possible because we do not modify the actual object; only modifying the arrayList references
@@ -484,7 +487,7 @@ public class GameBoard {
 
     private GameBoard simulateMove(int move) {
         // create clone GameBoard
-        GameBoard newBoard = new GameBoard(mAngle,mPacmanSide,mParent,mChildren,mPacman,mWalls,mConsumables,mConsumedFoods,goalX,goalY);
+        GameBoard newBoard = new GameBoard(mAngle,mPacmanSide,mParent,mChildren,mPacman,mGhost,mWalls,mConsumables,mConsumedFoods,goalX,goalY);
         switch(move) {
             case LEFT_MOVE: // Move left
                 newBoard.setTranslation(newBoard.getPacman(),0);
@@ -505,6 +508,10 @@ public class GameBoard {
 
     public void drawPacman(float[] matrix) {
         mPacman.draw(matrix);
+    }
+
+    public void drawGhost(float[] matrix) {
+        mGhost.draw(matrix);
     }
 
     public void drawWall(float[] matrix) {
